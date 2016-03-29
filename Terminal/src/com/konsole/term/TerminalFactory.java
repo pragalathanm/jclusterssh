@@ -17,6 +17,9 @@
 package com.konsole.term;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
@@ -46,9 +49,36 @@ import org.openide.windows.WindowManager;
 public class TerminalFactory {
 
     private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
+    public static final Map<String, TerminalTopComponent> openedTerminals = new HashMap<>();
 
-    public static TerminalTopComponent newTerminalTopComponent(String title) {
-        TerminalTopComponent emulator = new TerminalTopComponent();
+    public static void closeOthers(List<String> hosts) {
+        Map<String, TerminalTopComponent> toBeClosed = new HashMap<>(openedTerminals);
+        toBeClosed.keySet().removeAll(hosts);
+        for (TerminalTopComponent openedTerminal : toBeClosed.values()) {
+            openedTerminal.close();
+        }
+        openedTerminals.keySet().retainAll(hosts);
+    }
+
+    public static void closeAll() {
+        for (TerminalTopComponent openedTerminal : openedTerminals.values()) {
+            openedTerminal.close();
+        }
+        openedTerminals.clear();
+    }
+
+    public static TerminalTopComponent newTerminalTopComponent(final String title) {
+        if (openedTerminals.containsKey(title)) {
+            return openedTerminals.get(title);
+        }
+        TerminalTopComponent emulator = new TerminalTopComponent() {
+            @Override
+            protected void componentClosed() {
+                super.componentClosed();
+                openedTerminals.remove(title);
+            }
+        };
+        openedTerminals.put(title, emulator);
         WindowManager.getDefault().findMode("editor").dockInto(emulator);
 
         emulator.open();

@@ -19,7 +19,12 @@ package com.konsole.cluster;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import com.sun.glass.events.KeyEvent;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
@@ -27,13 +32,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.AbstractListModel;
+import javax.swing.Box;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import org.jdesktop.beansbinding.AutoBinding;
+import org.jdesktop.beansbinding.BeanProperty;
+import org.jdesktop.beansbinding.Binding;
+import org.jdesktop.beansbinding.BindingGroup;
+import org.jdesktop.beansbinding.Bindings;
 import org.jdesktop.beansbinding.Converter;
+import org.jdesktop.beansbinding.ELProperty;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.Mnemonics;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -60,18 +85,24 @@ import org.openide.windows.WindowManager;
         preferredID = "ClusterTopComponent"
 )
 @Messages({
-    "CTL_ClusterAction=Cluster",
-    "CTL_ClusterTopComponent=Cluster Window",
-    "HINT_ClusterTopComponent=This is a Cluster window"
+    "CTL_ClusterAction=Clusters",
+    "CTL_ClusterTopComponent=Clusters",
+    "HINT_ClusterTopComponent=This shows the cluster view"
 })
 public final class ClusterTopComponent extends TopComponent {
-
-    private List<TerminalTopComponent> openedTerminals = new ArrayList<>();
 
     public ClusterTopComponent() {
         initComponents();
         setName(Bundle.CTL_ClusterTopComponent());
         setToolTipText(Bundle.HINT_ClusterTopComponent());
+
+        hostList.addListSelectionListener(new ListSelectionListener() {
+
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                removeHostButton.setEnabled(!hostList.isSelectionEmpty());
+            }
+        });
     }
 
     /**
@@ -81,39 +112,43 @@ public final class ClusterTopComponent extends TopComponent {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
+        bindingGroup = new BindingGroup();
 
-        commandTextField = new javax.swing.JTextField();
-        runButton = new javax.swing.JButton();
-        clusterComboBox = new javax.swing.JComboBox();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        hostList = new javax.swing.JList();
-        addGroupButton = new javax.swing.JButton();
-        addHostButton = new javax.swing.JButton();
-        loadGroupButton = new javax.swing.JButton();
+        commandTextField = new JTextField();
+        runButton = new JButton();
+        clusterComboBox = new JComboBox();
+        jScrollPane1 = new JScrollPane();
+        hostList = new JList();
+        addClusterButton = new JButton();
+        addHostButton = new JButton();
+        openClusterButton = new JButton();
+        removeClusterButton = new JButton();
+        removeHostButton = new JButton();
+        closeClusterButton = new JButton();
+        filler1 = new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(0, 0));
 
-        commandTextField.setText(org.openide.util.NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.commandTextField.text")); // NOI18N
-        commandTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+        commandTextField.setText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.commandTextField.text")); // NOI18N
+        commandTextField.addKeyListener(new KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 commandTextFieldKeyReleased(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(runButton, org.openide.util.NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.runButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(runButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.runButton.text")); // NOI18N
 
-        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ, commandTextField, org.jdesktop.beansbinding.ELProperty.create("${text}"), runButton, org.jdesktop.beansbinding.BeanProperty.create("enabled"));
+        Binding binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ, commandTextField, ELProperty.create("${text}"), runButton, BeanProperty.create("enabled"));
         binding.setConverter(STRING_TO_BOOLEAN_CONVERTER);
         bindingGroup.addBinding(binding);
 
-        runButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        runButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 runButtonActionPerformed(evt);
             }
         });
 
         clusterComboBox.setModel(clusterModel);
-        clusterComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+        clusterComboBox.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent evt) {
                 clusterComboBoxItemStateChanged(evt);
             }
         });
@@ -121,76 +156,125 @@ public final class ClusterTopComponent extends TopComponent {
         hostList.setModel(hostModel);
         jScrollPane1.setViewportView(hostList);
 
-        org.openide.awt.Mnemonics.setLocalizedText(addGroupButton, org.openide.util.NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addGroupButton.text")); // NOI18N
-        addGroupButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addGroupButtonActionPerformed(evt);
+        addClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/add_to_database.png"))); // NOI18N
+        Mnemonics.setLocalizedText(addClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addClusterButton.text")); // NOI18N
+        addClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addClusterButton.toolTipText")); // NOI18N
+        addClusterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                addClusterButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(addHostButton, org.openide.util.NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addHostButton.text")); // NOI18N
+        addHostButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/computer_add.png"))); // NOI18N
+        Mnemonics.setLocalizedText(addHostButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addHostButton.text")); // NOI18N
+        addHostButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addHostButton.toolTipText")); // NOI18N
         addHostButton.setEnabled(false);
-        addHostButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        addHostButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 addHostButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(loadGroupButton, org.openide.util.NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.loadGroupButton.text")); // NOI18N
-        loadGroupButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadGroupButtonActionPerformed(evt);
+        openClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/open.png"))); // NOI18N
+        Mnemonics.setLocalizedText(openClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.openClusterButton.text")); // NOI18N
+        openClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.openClusterButton.toolTipText")); // NOI18N
+        openClusterButton.setEnabled(false);
+        openClusterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                openClusterButtonActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        removeClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/remove_from_database.png"))); // NOI18N
+        Mnemonics.setLocalizedText(removeClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeClusterButton.text")); // NOI18N
+        removeClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeClusterButton.toolTipText")); // NOI18N
+        removeClusterButton.setEnabled(false);
+        removeClusterButton.setFocusable(false);
+        removeClusterButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        removeClusterButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        removeClusterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                removeClusterButtonActionPerformed(evt);
+            }
+        });
+
+        removeHostButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/computer_remove.png"))); // NOI18N
+        Mnemonics.setLocalizedText(removeHostButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeHostButton.text")); // NOI18N
+        removeHostButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeHostButton.toolTipText")); // NOI18N
+        removeHostButton.setEnabled(false);
+        removeHostButton.setFocusable(false);
+        removeHostButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        removeHostButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+
+        closeClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/close.png"))); // NOI18N
+        Mnemonics.setLocalizedText(closeClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.closeClusterButton.text")); // NOI18N
+        closeClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.closeClusterButton.toolTipText")); // NOI18N
+        closeClusterButton.setEnabled(false);
+        closeClusterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                closeClusterButtonActionPerformed(evt);
+            }
+        });
+
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(commandTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(runButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(clusterComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(loadGroupButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(addHostButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(addGroupButton, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addComponent(clusterComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                            .addGroup(GroupLayout.Alignment.TRAILING, layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                .addComponent(addHostButton, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(addClusterButton, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(removeClusterButton, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(removeHostButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(openClusterButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(closeClusterButton, GroupLayout.Alignment.TRAILING)
+                            .addComponent(filler1, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(commandTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(commandTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(runButton))
                 .addGap(24, 24, 24)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(clusterComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addComponent(addGroupButton, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addHostButton, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(loadGroupButton, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(175, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(addClusterButton, GroupLayout.PREFERRED_SIZE, 55, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeClusterButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addHostButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(removeHostButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(openClusterButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(closeClusterButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(clusterComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1)))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(filler1, GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         bindingGroup.bind();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
+    private void runButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
         executeCommand(commandTextField.getText());
     }//GEN-LAST:event_runButtonActionPerformed
 
@@ -202,15 +286,15 @@ public final class ClusterTopComponent extends TopComponent {
         }
     }//GEN-LAST:event_commandTextFieldKeyReleased
 
-    private void addGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGroupButtonActionPerformed
+    private void addClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addClusterButtonActionPerformed
         String clusterName = JOptionPane.showInputDialog("Enter the cluster name: ");
         if (clusterName != null && !clusterName.isEmpty()) {
             final Cluster cluster = new Cluster(clusterName);
             clusterModel.addElement(cluster);
         }
-    }//GEN-LAST:event_addGroupButtonActionPerformed
+    }//GEN-LAST:event_addClusterButtonActionPerformed
 
-    private void addHostButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addHostButtonActionPerformed
+    private void addHostButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addHostButtonActionPerformed
         String hostName = JOptionPane.showInputDialog("Enter the host name: ");
         if (hostName != null && !hostName.isEmpty()) {
             Cluster cluster = (Cluster) clusterModel.getSelectedItem();
@@ -219,30 +303,45 @@ public final class ClusterTopComponent extends TopComponent {
         }
     }//GEN-LAST:event_addHostButtonActionPerformed
 
-    private void clusterComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_clusterComboBoxItemStateChanged
+    private void clusterComboBoxItemStateChanged(ItemEvent evt) {//GEN-FIRST:event_clusterComboBoxItemStateChanged
         hostModel.clear();
         if (evt.getStateChange() == ItemEvent.SELECTED) {
             hostModel.setHosts(((Cluster) clusterComboBox.getSelectedItem()).getHosts());
             addHostButton.setEnabled(true);
+            removeClusterButton.setEnabled(true);
+            openClusterButton.setEnabled(true);
+        } else {
+            addHostButton.setEnabled(false);
+            removeClusterButton.setEnabled(false);
+            openClusterButton.setEnabled(false);
         }
     }//GEN-LAST:event_clusterComboBoxItemStateChanged
 
-    private void loadGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadGroupButtonActionPerformed
-        for (TerminalTopComponent openedTerminal : openedTerminals) {
-            openedTerminal.close();
-        }
-        openedTerminals.clear();
+    private void openClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_openClusterButtonActionPerformed
         for (String host : hostModel.getHosts()) {
-            openedTerminals.add(TerminalFactory.newTerminalTopComponent(host));
+            TerminalFactory.newTerminalTopComponent(host);
         }
-    }//GEN-LAST:event_loadGroupButtonActionPerformed
+        closeClusterButton.setEnabled(true);
+        openClusterButton.setEnabled(false);
+    }//GEN-LAST:event_openClusterButtonActionPerformed
+
+    private void removeClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeClusterButtonActionPerformed
+        int index = clusterComboBox.getSelectedIndex();
+        clusterModel.removeElementAt(index);
+    }//GEN-LAST:event_removeClusterButtonActionPerformed
+
+    private void closeClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_closeClusterButtonActionPerformed
+        closeClusterButton.setEnabled(false);
+        TerminalFactory.closeAll();
+        openClusterButton.setEnabled(true);
+    }//GEN-LAST:event_closeClusterButtonActionPerformed
 
     private void executeCommand(String command) {
         executeCommand(command, true);
     }
 
     private void executeCommand(String command, boolean clearTextField) {
-        for (TerminalTopComponent openedTerminal : openedTerminals) {
+        for (TerminalTopComponent openedTerminal : TerminalFactory.openedTerminals.values()) {
             openedTerminal.execute(command);
         }
         if (clearTextField) {
@@ -254,15 +353,19 @@ public final class ClusterTopComponent extends TopComponent {
         return (TerminalTopComponent) WindowManager.getDefault().findMode("editor").getSelectedTopComponent();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addGroupButton;
-    private javax.swing.JButton addHostButton;
-    private javax.swing.JComboBox clusterComboBox;
-    private javax.swing.JTextField commandTextField;
-    private javax.swing.JList hostList;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton loadGroupButton;
-    private javax.swing.JButton runButton;
-    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
+    private JButton addClusterButton;
+    private JButton addHostButton;
+    private JButton closeClusterButton;
+    private JComboBox clusterComboBox;
+    private JTextField commandTextField;
+    private Box.Filler filler1;
+    private JList hostList;
+    private JScrollPane jScrollPane1;
+    private JButton openClusterButton;
+    private JButton removeClusterButton;
+    private JButton removeHostButton;
+    private JButton runButton;
+    private BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
     @Override
