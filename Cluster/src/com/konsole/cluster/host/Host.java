@@ -14,37 +14,45 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.konsole.cluster;
+package com.konsole.cluster.host;
 
-import com.konsole.cluster.host.Host;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
  * @author Pragalathan M <pragalathanm@gmail.com>
  */
-public class Cluster implements Serializable {
+public class Host implements Serializable {
 
     private String name;
-    private List<Host> hosts = new ArrayList<>();
+    private String ipAddress;
 
-    public Cluster(String name) {
-        this.name = name;
+    public Host() {
     }
 
-    public List<Host> getHosts() {
-        return hosts;
+    public Host(String name) {
+        this(name, name);
+    }
+
+    public Host(String name, String ipAddress) {
+        this.name = name;
+        this.ipAddress = ipAddress;
     }
 
     public String getName() {
         return name;
     }
 
-    @Override
-    public String toString() {
-        return name;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 
 }

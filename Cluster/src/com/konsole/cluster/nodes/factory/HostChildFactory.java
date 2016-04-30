@@ -14,37 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.konsole.cluster;
+package com.konsole.cluster.nodes.factory;
 
 import com.konsole.cluster.host.Host;
-import java.io.Serializable;
+import com.konsole.cluster.nodes.HostNode;
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Pragalathan M <pragalathanm@gmail.com>
  */
-public class Cluster implements Serializable {
+public class HostChildFactory extends AbstractChildFactory<Host> {
 
-    private String name;
-    private List<Host> hosts = new ArrayList<>();
-
-    public Cluster(String name) {
-        this.name = name;
+    public HostChildFactory() {
+        super(new ArrayList<Host>());
     }
 
-    public List<Host> getHosts() {
-        return hosts;
-    }
-
-    public String getName() {
-        return name;
+    public HostChildFactory(List<Host> items) {
+        super(items);
     }
 
     @Override
-    public String toString() {
-        return name;
+    protected Node createNodeForKey(Host key) {
+        return new HostNode(key);
     }
-
 }

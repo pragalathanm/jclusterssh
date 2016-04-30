@@ -14,37 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.konsole.cluster;
+package com.konsole.cluster.nodes;
 
-import com.konsole.cluster.host.Host;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import com.konsole.cluster.Cluster;
 
 /**
  *
  * @author Pragalathan M <pragalathanm@gmail.com>
  */
-public class Cluster implements Serializable {
+public class ClusterNode extends DefaultNode<Cluster> {
 
-    private String name;
-    private List<Host> hosts = new ArrayList<>();
+    private final Cluster cluster;
 
-    public Cluster(String name) {
-        this.name = name;
+    public ClusterNode(Cluster userObject) {
+        super(userObject);
+        cluster = userObject;
+        setName(cluster.getName());
     }
-
-    public List<Host> getHosts() {
-        return hosts;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
 }

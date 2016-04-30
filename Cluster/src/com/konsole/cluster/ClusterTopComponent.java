@@ -22,30 +22,12 @@ import com.sun.glass.events.KeyEvent;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.AbstractListModel;
 import javax.swing.Box;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
-import javax.swing.SwingConstants;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
@@ -57,9 +39,10 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -73,7 +56,7 @@ import org.openide.windows.WindowManager;
         autostore = false
 )
 @TopComponent.Description(
-        preferredID = "ClusterTopComponent",
+        preferredID = ClusterTopComponent.ID,
         //iconBase="SET/PATH/TO/ICON/HERE", 
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
@@ -85,24 +68,20 @@ import org.openide.windows.WindowManager;
         preferredID = "ClusterTopComponent"
 )
 @Messages({
-    "CTL_ClusterAction=Clusters",
-    "CTL_ClusterTopComponent=Clusters",
+    "CTL_ClusterAction=Cluster",
+    "CTL_ClusterTopComponent=Cluster",
     "HINT_ClusterTopComponent=This shows the cluster view"
 })
 public final class ClusterTopComponent extends TopComponent {
+
+    public static final String ID = "ClusterTopComponent";
+    private InstanceContent ic = new InstanceContent();
 
     public ClusterTopComponent() {
         initComponents();
         setName(Bundle.CTL_ClusterTopComponent());
         setToolTipText(Bundle.HINT_ClusterTopComponent());
-
-        hostList.addListSelectionListener(new ListSelectionListener() {
-
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                removeHostButton.setEnabled(!hostList.isSelectionEmpty());
-            }
-        });
+        associateLookup(new AbstractLookup(ic));
     }
 
     /**
@@ -116,15 +95,6 @@ public final class ClusterTopComponent extends TopComponent {
 
         commandTextField = new JTextField();
         runButton = new JButton();
-        clusterComboBox = new JComboBox();
-        jScrollPane1 = new JScrollPane();
-        hostList = new JList();
-        addClusterButton = new JButton();
-        addHostButton = new JButton();
-        openClusterButton = new JButton();
-        removeClusterButton = new JButton();
-        removeHostButton = new JButton();
-        closeClusterButton = new JButton();
         filler1 = new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(0, 0));
 
         commandTextField.setText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.commandTextField.text")); // NOI18N
@@ -146,76 +116,6 @@ public final class ClusterTopComponent extends TopComponent {
             }
         });
 
-        clusterComboBox.setModel(clusterModel);
-        clusterComboBox.addItemListener(new ItemListener() {
-            public void itemStateChanged(ItemEvent evt) {
-                clusterComboBoxItemStateChanged(evt);
-            }
-        });
-
-        hostList.setModel(hostModel);
-        jScrollPane1.setViewportView(hostList);
-
-        addClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/add_to_database.png"))); // NOI18N
-        Mnemonics.setLocalizedText(addClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addClusterButton.text")); // NOI18N
-        addClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addClusterButton.toolTipText")); // NOI18N
-        addClusterButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                addClusterButtonActionPerformed(evt);
-            }
-        });
-
-        addHostButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/computer_add.png"))); // NOI18N
-        Mnemonics.setLocalizedText(addHostButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addHostButton.text")); // NOI18N
-        addHostButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.addHostButton.toolTipText")); // NOI18N
-        addHostButton.setEnabled(false);
-        addHostButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                addHostButtonActionPerformed(evt);
-            }
-        });
-
-        openClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/open.png"))); // NOI18N
-        Mnemonics.setLocalizedText(openClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.openClusterButton.text")); // NOI18N
-        openClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.openClusterButton.toolTipText")); // NOI18N
-        openClusterButton.setEnabled(false);
-        openClusterButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                openClusterButtonActionPerformed(evt);
-            }
-        });
-
-        removeClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/remove_from_database.png"))); // NOI18N
-        Mnemonics.setLocalizedText(removeClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeClusterButton.text")); // NOI18N
-        removeClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeClusterButton.toolTipText")); // NOI18N
-        removeClusterButton.setEnabled(false);
-        removeClusterButton.setFocusable(false);
-        removeClusterButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        removeClusterButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-        removeClusterButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                removeClusterButtonActionPerformed(evt);
-            }
-        });
-
-        removeHostButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/computer_remove.png"))); // NOI18N
-        Mnemonics.setLocalizedText(removeHostButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeHostButton.text")); // NOI18N
-        removeHostButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.removeHostButton.toolTipText")); // NOI18N
-        removeHostButton.setEnabled(false);
-        removeHostButton.setFocusable(false);
-        removeHostButton.setHorizontalTextPosition(SwingConstants.CENTER);
-        removeHostButton.setVerticalTextPosition(SwingConstants.BOTTOM);
-
-        closeClusterButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/close.png"))); // NOI18N
-        Mnemonics.setLocalizedText(closeClusterButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.closeClusterButton.text")); // NOI18N
-        closeClusterButton.setToolTipText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.closeClusterButton.toolTipText")); // NOI18N
-        closeClusterButton.setEnabled(false);
-        closeClusterButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                closeClusterButtonActionPerformed(evt);
-            }
-        });
-
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -223,23 +123,12 @@ public final class ClusterTopComponent extends TopComponent {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(commandTextField)
+                        .addComponent(commandTextField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(runButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addComponent(clusterComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 298, Short.MAX_VALUE))
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                            .addGroup(GroupLayout.Alignment.TRAILING, layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                .addComponent(addHostButton, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(addClusterButton, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(removeClusterButton, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(removeHostButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(openClusterButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(closeClusterButton, GroupLayout.Alignment.TRAILING)
-                            .addComponent(filler1, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE))))
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(filler1, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -248,26 +137,8 @@ public final class ClusterTopComponent extends TopComponent {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(commandTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(runButton))
-                .addGap(24, 24, 24)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(addClusterButton, GroupLayout.PREFERRED_SIZE, 55, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeClusterButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addHostButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(removeHostButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(openClusterButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(closeClusterButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(clusterComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jScrollPane1)))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(filler1, GroupLayout.DEFAULT_SIZE, 136, Short.MAX_VALUE)
+                .addGap(277, 277, 277)
+                .addComponent(filler1, GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -286,56 +157,6 @@ public final class ClusterTopComponent extends TopComponent {
         }
     }//GEN-LAST:event_commandTextFieldKeyReleased
 
-    private void addClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addClusterButtonActionPerformed
-        String clusterName = JOptionPane.showInputDialog("Enter the cluster name: ");
-        if (clusterName != null && !clusterName.isEmpty()) {
-            final Cluster cluster = new Cluster(clusterName);
-            clusterModel.addElement(cluster);
-        }
-    }//GEN-LAST:event_addClusterButtonActionPerformed
-
-    private void addHostButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_addHostButtonActionPerformed
-        String hostName = JOptionPane.showInputDialog("Enter the host name: ");
-        if (hostName != null && !hostName.isEmpty()) {
-            Cluster cluster = (Cluster) clusterModel.getSelectedItem();
-            cluster.getHosts().add(hostName);
-            hostModel.setHosts(cluster.getHosts());
-        }
-    }//GEN-LAST:event_addHostButtonActionPerformed
-
-    private void clusterComboBoxItemStateChanged(ItemEvent evt) {//GEN-FIRST:event_clusterComboBoxItemStateChanged
-        hostModel.clear();
-        if (evt.getStateChange() == ItemEvent.SELECTED) {
-            hostModel.setHosts(((Cluster) clusterComboBox.getSelectedItem()).getHosts());
-            addHostButton.setEnabled(true);
-            removeClusterButton.setEnabled(true);
-            openClusterButton.setEnabled(true);
-        } else {
-            addHostButton.setEnabled(false);
-            removeClusterButton.setEnabled(false);
-            openClusterButton.setEnabled(false);
-        }
-    }//GEN-LAST:event_clusterComboBoxItemStateChanged
-
-    private void openClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_openClusterButtonActionPerformed
-        for (String host : hostModel.getHosts()) {
-            TerminalFactory.newTerminalTopComponent(host);
-        }
-        closeClusterButton.setEnabled(true);
-        openClusterButton.setEnabled(false);
-    }//GEN-LAST:event_openClusterButtonActionPerformed
-
-    private void removeClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_removeClusterButtonActionPerformed
-        int index = clusterComboBox.getSelectedIndex();
-        clusterModel.removeElementAt(index);
-    }//GEN-LAST:event_removeClusterButtonActionPerformed
-
-    private void closeClusterButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_closeClusterButtonActionPerformed
-        closeClusterButton.setEnabled(false);
-        TerminalFactory.closeAll();
-        openClusterButton.setEnabled(true);
-    }//GEN-LAST:event_closeClusterButtonActionPerformed
-
     private void executeCommand(String command) {
         executeCommand(command, true);
     }
@@ -353,46 +174,15 @@ public final class ClusterTopComponent extends TopComponent {
         return (TerminalTopComponent) WindowManager.getDefault().findMode("editor").getSelectedTopComponent();
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton addClusterButton;
-    private JButton addHostButton;
-    private JButton closeClusterButton;
-    private JComboBox clusterComboBox;
     private JTextField commandTextField;
     private Box.Filler filler1;
-    private JList hostList;
-    private JScrollPane jScrollPane1;
-    private JButton openClusterButton;
-    private JButton removeClusterButton;
-    private JButton removeHostButton;
     private JButton runButton;
     private BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void componentOpened() {
-        try {
-            List<Cluster> clusters = StoreManager.getClusters();
 
-            for (Cluster cluster : clusters) {
-                clusterModel.addElement(cluster);
-            }
-        } catch (IOException | ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        WindowManager.getDefault().getMainWindow().addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                try {
-                    List<Cluster> clusters = new ArrayList<>();
-                    for (int i = 0; i < clusterModel.getSize(); i++) {
-                        clusters.add(clusterModel.getElementAt(i));
-                    }
-                    StoreManager.setClusters(clusters);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
     }
 
     @Override
@@ -411,9 +201,6 @@ public final class ClusterTopComponent extends TopComponent {
         // TODO read your settings according to their version
     }
 
-    private DefaultComboBoxModel<Cluster> clusterModel = new DefaultComboBoxModel<Cluster>();
-    private HostListModel hostModel = new HostListModel();
-
     private final Converter< String, Boolean> STRING_TO_BOOLEAN_CONVERTER = new Converter<String, Boolean>() {
 
         @Override
@@ -426,33 +213,4 @@ public final class ClusterTopComponent extends TopComponent {
             return "";
         }
     };
-
-    private class HostListModel extends AbstractListModel<String> {
-
-        private List<String> hosts = Collections.<String>emptyList();
-        private final List<String> EMPTY = Collections.<String>emptyList();
-
-        void setHosts(List<String> hosts) {
-            this.hosts = hosts;
-            fireContentsChanged(this, 0, hosts.size());
-        }
-
-        void clear() {
-            this.hosts = EMPTY;
-        }
-
-        @Override
-        public int getSize() {
-            return hosts.size();
-        }
-
-        @Override
-        public String getElementAt(int index) {
-            return hosts.get(index);
-        }
-
-        public List<String> getHosts() {
-            return hosts;
-        }
-    }
 }

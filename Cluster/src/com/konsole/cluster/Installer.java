@@ -16,35 +16,23 @@
  */
 package com.konsole.cluster;
 
-import com.konsole.cluster.host.Host;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import org.openide.modules.ModuleInstall;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Pragalathan M <pragalathanm@gmail.com>
  */
-public class Cluster implements Serializable {
-
-    private String name;
-    private List<Host> hosts = new ArrayList<>();
-
-    public Cluster(String name) {
-        this.name = name;
-    }
-
-    public List<Host> getHosts() {
-        return hosts;
-    }
-
-    public String getName() {
-        return name;
-    }
+public class Installer extends ModuleInstall {
 
     @Override
-    public String toString() {
-        return name;
-    }
+    public void restored() {
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
 
+            @Override
+            public void run() {
+                ClusterPanel.getInstance().loadClusters();
+            }
+        });
+    }
 }

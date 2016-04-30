@@ -14,37 +14,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.konsole.cluster;
+package com.konsole.cluster.nodes;
 
-import com.konsole.cluster.host.Host;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Pragalathan M <pragalathanm@gmail.com>
  */
-public class Cluster implements Serializable {
+public class DefaultNode<T> extends AbstractNode {
 
-    private String name;
-    private List<Host> hosts = new ArrayList<>();
+    private T userObject;
 
-    public Cluster(String name) {
-        this.name = name;
+    public DefaultNode(T userObject) {
+        super(Children.LEAF, Lookups.fixed(userObject));
+        this.userObject = userObject;
     }
 
-    public List<Host> getHosts() {
-        return hosts;
+    public T getUserObject() {
+        return userObject;
     }
 
-    public String getName() {
-        return name;
+    public void setUserObject(T userObject) {
+        this.userObject = userObject;
     }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
 }

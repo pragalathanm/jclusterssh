@@ -1,6 +1,7 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
 OpenIDE-Module: com.konsole.cluster
+OpenIDE-Module-Install: com/konsole/cluster/Installer.class
 OpenIDE-Module-Layer: com/konsole/cluster/layer.xml
 OpenIDE-Module-Localizing-Bundle: com/konsole/cluster/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.WindowManager

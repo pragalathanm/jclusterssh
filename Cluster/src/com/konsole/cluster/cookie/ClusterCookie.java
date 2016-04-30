@@ -14,37 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package com.konsole.cluster;
-
-import com.konsole.cluster.host.Host;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+package com.konsole.cluster.cookie;
 
 /**
  *
  * @author Pragalathan M <pragalathanm@gmail.com>
  */
-public class Cluster implements Serializable {
+public interface ClusterCookie {
 
-    private String name;
-    private List<Host> hosts = new ArrayList<>();
+    void removeCluster();
 
-    public Cluster(String name) {
-        this.name = name;
-    }
+    void addHost(String hostName);
 
-    public List<Host> getHosts() {
-        return hosts;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
+    void open();
 }
