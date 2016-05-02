@@ -70,7 +70,7 @@ public abstract class AbstractChildFactory<T> extends ChildFactory<T> {
 
     public void removeEntry(Node... nodes) {
         for (Node node : nodes) {
-            entries.remove(((DefaultNode) node).getUserObject());
+            entries.remove((T) ((DefaultNode) node).getUserObject());
         }
         refresh(true);
     }
@@ -81,7 +81,6 @@ public abstract class AbstractChildFactory<T> extends ChildFactory<T> {
     }
 
     public void setEntries(List<T> list) {
-        System.err.println("list = " + list);
         this.entries = list;
         this.refresh(true);
     }

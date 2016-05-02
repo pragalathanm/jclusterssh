@@ -46,7 +46,7 @@ public class HostNode extends DefaultNode<Host> {
 
         try {
             ss.put(new PropertySupport.Reflection<>(host, String.class, "name"));
-            ss.put(new PropertySupport.Reflection<>(host, String.class, "name"));
+            ss.put(new PropertySupport.Reflection<>(host, String.class, "ipAddress"));
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
         }

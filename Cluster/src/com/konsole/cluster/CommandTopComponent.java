@@ -18,15 +18,18 @@ package com.konsole.cluster;
 
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
-import com.sun.glass.events.KeyEvent;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
+import java.awt.event.InputEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JTextField;
+import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.BeanProperty;
@@ -44,7 +47,6 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
@@ -56,32 +58,36 @@ import org.openide.windows.WindowManager;
         autostore = false
 )
 @TopComponent.Description(
-        preferredID = ClusterTopComponent.ID,
+        preferredID = CommandTopComponent.ID,
         //iconBase="SET/PATH/TO/ICON/HERE", 
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
 @TopComponent.Registration(mode = "explorer", openAtStartup = true)
-@ActionID(category = "Window", id = "com.konsole.cluster.ClusterTopComponent")
+@ActionID(category = "Window", id = "com.konsole.cluster.CommandTopComponent")
 @ActionReference(path = "Menu/Window" /*, position = 333 */)
 @TopComponent.OpenActionRegistration(
-        displayName = "#CTL_ClusterAction",
-        preferredID = "ClusterTopComponent"
+        displayName = "#CTL_CommandAction",
+        preferredID = "CommandTopComponent"
 )
 @Messages({
-    "CTL_ClusterAction=Cluster",
-    "CTL_ClusterTopComponent=Cluster",
-    "HINT_ClusterTopComponent=This shows the cluster view"
+    "CTL_CommandAction=Command",
+    "CTL_CommandTopComponent=Command",
+    "HINT_CommandTopComponent=This shows the commands view"
 })
-public final class ClusterTopComponent extends TopComponent {
+public final class CommandTopComponent extends TopComponent {
 
-    public static final String ID = "ClusterTopComponent";
+    public static final String ID = "CommandTopComponent";
     private InstanceContent ic = new InstanceContent();
 
-    public ClusterTopComponent() {
+    public CommandTopComponent() {
         initComponents();
-        setName(Bundle.CTL_ClusterTopComponent());
-        setToolTipText(Bundle.HINT_ClusterTopComponent());
+        setName(Bundle.CTL_CommandTopComponent());
+        setToolTipText(Bundle.HINT_CommandTopComponent());
         associateLookup(new AbstractLookup(ic));
+        commandEditorPane.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), "ENTER_ACTION");
+        commandEditorPane.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "CTRL_L_ACTION");
+        commandEditorPane.getActionMap().put("ENTER_ACTION", ENTER_KEY_ACTION);
+        commandEditorPane.getActionMap().put("CTRL_L_ACTION", CTRL_L_ACTION);
     }
 
     /**
@@ -93,20 +99,14 @@ public final class ClusterTopComponent extends TopComponent {
     private void initComponents() {
         bindingGroup = new BindingGroup();
 
-        commandTextField = new JTextField();
         runButton = new JButton();
         filler1 = new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(0, 0));
+        jScrollPane2 = new JScrollPane();
+        commandEditorPane = new JEditorPane();
 
-        commandTextField.setText(NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.commandTextField.text")); // NOI18N
-        commandTextField.addKeyListener(new KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                commandTextFieldKeyReleased(evt);
-            }
-        });
+        Mnemonics.setLocalizedText(runButton, NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.runButton.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(runButton, NbBundle.getMessage(ClusterTopComponent.class, "ClusterTopComponent.runButton.text")); // NOI18N
-
-        Binding binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ, commandTextField, ELProperty.create("${text}"), runButton, BeanProperty.create("enabled"));
+        Binding binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, commandEditorPane, ELProperty.create("${text}"), runButton, BeanProperty.create("enabled"));
         binding.setConverter(STRING_TO_BOOLEAN_CONVERTER);
         bindingGroup.addBinding(binding);
 
@@ -116,28 +116,30 @@ public final class ClusterTopComponent extends TopComponent {
             }
         });
 
+        jScrollPane2.setViewportView(commandEditorPane);
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(commandTextField, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(filler1, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE))
+                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(runButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(filler1, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(runButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(commandTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(runButton))
-                .addGap(277, 277, 277)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(runButton))
+                    .addComponent(jScrollPane2, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
+                .addGap(233, 233, 233)
                 .addComponent(filler1, GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
                 .addContainerGap())
         );
@@ -146,16 +148,8 @@ public final class ClusterTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void runButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        executeCommand(commandTextField.getText());
+        executeCommand(commandEditorPane.getText());
     }//GEN-LAST:event_runButtonActionPerformed
-
-    private void commandTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandTextFieldKeyReleased
-        if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
-            executeCommand(commandTextField.getText());
-        } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_L) {
-            executeCommand("clear", false);
-        }
-    }//GEN-LAST:event_commandTextFieldKeyReleased
 
     private void executeCommand(String command) {
         executeCommand(command, true);
@@ -166,16 +160,14 @@ public final class ClusterTopComponent extends TopComponent {
             openedTerminal.execute(command);
         }
         if (clearTextField) {
-            commandTextField.setText("");
+            commandEditorPane.setText("");
         }
     }
 
-    private TerminalTopComponent getTerminal() {
-        return (TerminalTopComponent) WindowManager.getDefault().findMode("editor").getSelectedTopComponent();
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JTextField commandTextField;
+    private JEditorPane commandEditorPane;
     private Box.Filler filler1;
+    private JScrollPane jScrollPane2;
     private JButton runButton;
     private BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
@@ -211,6 +203,21 @@ public final class ClusterTopComponent extends TopComponent {
         @Override
         public String convertReverse(Boolean value) {
             return "";
+        }
+    };
+
+    private final Action ENTER_KEY_ACTION = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            executeCommand(commandEditorPane.getText());
+        }
+    };
+    private final Action CTRL_L_ACTION = new AbstractAction() {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            executeCommand("clear", false);
         }
     };
 }

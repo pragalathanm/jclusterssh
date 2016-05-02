@@ -6,27 +6,15 @@
             <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/ClusterTopComponent.java</file>
         </group>
         <group>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/nodes/factory/AbstractChildFactory.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/NewClusterAction.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/RemoveHostAction.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/NewHostAction.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/Cluster.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/StoreManager.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/Installer.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/nodes/factory/HostChildFactory.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/nodes/ClusterNode.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/cookie/HostCookie.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/StartPageTopComponent.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/nodes/HostNode.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/lookup/GlobalActionContextProxy.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/CloseClusterAction.java</file>
             <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/ClusterPanel.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/host/Host.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/ClusterTopComponent.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/cookie/ClustersCookie.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/host/HostTopComponent.java</file>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/RemoveClusterAction.java</file>
+            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/CommandRunAction.java</file>
+            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/CommandTopComponent.java</file>
+            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/ClusterSelectionAction.java</file>
+            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/CommandPanel.java</file>
+            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/cookie/ClusterCookie.java</file>
+            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/Bundle.properties</file>
             <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/OpenClusterAction.java</file>
+            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/action/CloseClusterAction.java</file>
         </group>
     </open-files>
 </project-private>

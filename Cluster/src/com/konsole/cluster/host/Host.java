@@ -17,6 +17,7 @@
 package com.konsole.cluster.host;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  *
@@ -55,4 +56,25 @@ public class Host implements Serializable {
         this.ipAddress = ipAddress;
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + Objects.hashCode(this.ipAddress);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Host other = (Host) obj;
+        if (!Objects.equals(this.ipAddress, other.ipAddress)) {
+            return false;
+        }
+        return true;
+    }
 }

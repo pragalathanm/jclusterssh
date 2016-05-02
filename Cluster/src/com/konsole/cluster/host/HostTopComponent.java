@@ -64,8 +64,8 @@ public final class HostTopComponent extends TopComponent implements ExplorerMana
     private ExplorerManager em = new ExplorerManager();
     private InstanceContent ic = new InstanceContent();
     private HostChildFactory hostChildFactory = new HostChildFactory(new ArrayList<Host>());
-    Lookup.Result<Cluster> clusterResult;
-    Lookup.Result<Host> hostResult;
+    private Lookup.Result<Cluster> clusterResult;
+    private Lookup.Result<Host> hostResult;
 
     public HostTopComponent() {
         initComponents();
@@ -162,7 +162,11 @@ public final class HostTopComponent extends TopComponent implements ExplorerMana
 
         @Override
         public void removeHost() {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            final Cluster cluster = clusterResult.allInstances().iterator().next();
+            for (Host host : hostResult.allInstances()) {
+                cluster.getHosts().remove(host);
+            }
+            hostChildFactory.setEntries(cluster.getHosts());
         }
     };
 }

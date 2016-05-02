@@ -17,7 +17,6 @@
 package com.konsole.cluster.action;
 
 import com.konsole.cluster.cookie.ClusterCookie;
-import com.konsole.term.TerminalFactory;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
@@ -36,7 +35,7 @@ import org.openide.util.NbBundle.Messages;
 )
 @ActionReferences({
     @ActionReference(path = "Menu/Action", position = 250),
-    @ActionReference(path = "Toolbars/Action", position = 250)
+    @ActionReference(path = "Toolbars/ZAction", position = 250)
 })
 @Messages("CTL_CloseClusterAction=Close Cluster")
 public final class CloseClusterAction implements ActionListener {
@@ -49,6 +48,6 @@ public final class CloseClusterAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        TerminalFactory.closeAll();
+        context.close();
     }
 }

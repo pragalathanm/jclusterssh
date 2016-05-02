@@ -19,7 +19,6 @@ package com.konsole.cluster.action;
 import com.konsole.cluster.cookie.HostCookie;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -45,16 +44,14 @@ import org.openide.util.NbBundle.Messages;
 @Messages("CTL_RemoveHostAction=Remove host")
 public final class RemoveHostAction implements ActionListener {
 
-    private final List<HostCookie> context;
+    private final HostCookie context;
 
-    public RemoveHostAction(List<HostCookie> context) {
+    public RemoveHostAction(HostCookie context) {
         this.context = context;
     }
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        for (HostCookie hostCookie : context) {
-            // TODO use hostCookie
-        }
+        context.removeHost();
     }
 }

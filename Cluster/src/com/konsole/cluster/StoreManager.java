@@ -23,6 +23,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.NbPreferences;
 
 /**
@@ -32,11 +34,12 @@ import org.openide.util.NbPreferences;
 public class StoreManager {
 
     public static List<Cluster> clusters;
+    private static final Logger LOG = Logger.getLogger(StoreManager.class.getName());
 
     public static List<Cluster> getClusters() throws IOException, ClassNotFoundException {
         byte[] buffer = NbPreferences.forModule(StoreManager.class).getByteArray("clusters", new byte[0]);
         if (buffer.length == 0) {
-            System.out.println("no cluster saved");
+            LOG.info("No cluster was saved prviously.");
             return new ArrayList<>();
         }
         try (ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(buffer))) {
@@ -45,7 +48,7 @@ public class StoreManager {
     }
 
     public static void setClusters(List<Cluster> clusters) throws IOException {
-        System.err.println("saving clusters = " + clusters);
+        LOG.log(Level.INFO, "Saving clusters {0}", clusters);
         if (clusters == null) {
             clusters = new ArrayList<>();
         }

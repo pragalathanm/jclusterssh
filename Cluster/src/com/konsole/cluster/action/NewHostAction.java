@@ -51,7 +51,18 @@ public final class NewHostAction implements ActionListener {
     public void actionPerformed(ActionEvent ev) {
         String hostName = JOptionPane.showInputDialog("Enter the host name: ");
         if (hostName != null && !hostName.isEmpty()) {
-            context.addHost(hostName);
+            String[] names;
+            if (hostName.contains(",")) {
+                names = hostName.split(",");
+            } else if (hostName.contains(" ")) {
+                names = hostName.split(" ");
+            } else {
+                names = new String[]{hostName};
+            }
+            for (int i = 0; i < names.length; i++) {
+                names[i] = names[i].trim();
+            }
+            context.addHost(names);
         }
     }
 }

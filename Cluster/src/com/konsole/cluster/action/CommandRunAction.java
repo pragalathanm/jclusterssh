@@ -16,7 +16,7 @@
  */
 package com.konsole.cluster.action;
 
-import com.konsole.cluster.ClusterPanel;
+import com.konsole.cluster.CommandPanel;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -26,21 +26,25 @@ import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.Presenter;
 
+/**
+ *
+ * @author Pragalathan M <pragalathanm@gmail.com>
+ */
 @ActionID(
-        category = "File",
-        id = "com.konsole.cluster.action.ClusterSelectionAction"
+        category = "Command",
+        id = "com.konsole.cluster.action.CommandRunAction"
 )
 @ActionRegistration(
         lazy = false,
-        displayName = "#CTL_ClusterSelectionAction"
+        displayName = "#CTL_CommandRunAction"
 )
-@ActionReference(path = "Toolbars/ZAction", position = 150)
-@Messages("CTL_ClusterSelectionAction=Select a Cluster")
-public final class ClusterSelectionAction extends AbstractAction implements Presenter.Toolbar {
+@ActionReference(path = "Toolbars/ZAction", position = 500)
+@Messages("CTL_CommandRunAction=Command Run")
+public final class CommandRunAction extends AbstractAction implements Presenter.Toolbar {
 
     @Override
     public Component getToolbarPresenter() {
-        return ClusterPanel.getInstance();
+        return CommandPanel.getInstance();
     }
 
     @Override

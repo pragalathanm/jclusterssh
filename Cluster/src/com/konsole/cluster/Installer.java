@@ -35,4 +35,10 @@ public class Installer extends ModuleInstall {
             }
         });
     }
+
+    @Override
+    public boolean closing() {
+        ClusterPanel.getInstance().storeClusters();
+        return true;
+    }
 }

@@ -20,13 +20,12 @@ import com.konsole.cluster.cookie.ClusterCookie;
 import com.konsole.cluster.host.Host;
 import com.konsole.cluster.nodes.factory.ClusterChildFactory;
 import com.konsole.term.TerminalFactory;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -41,7 +40,6 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -55,6 +53,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
     private Lookup.Result<Cluster> clusterResult;
     private Cluster selectedCluster;
     private static ClusterPanel instance;
+    private static final Logger LOG = Logger.getLogger(ClusterPanel.class.getName());
 
     public static ClusterPanel getInstance() {
         if (instance == null) {
@@ -132,23 +131,22 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
     }
 
     public void loadClusters() {
+        LOG.info("loading clusters...");
         try {
             List<Cluster> clusters = StoreManager.getClusters();
-
             clusterChildFactory.addEntry(clusters);
         } catch (IOException | ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        WindowManager.getDefault().getMainWindow().addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                try {
-                    StoreManager.setClusters(clusterChildFactory.getEntries());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
+    }
+
+    public void storeClusters() {
+        try {
+            StoreManager.setClusters(clusterChildFactory.getEntries());
+            LOG.info("Storing cluster details...");
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -165,13 +163,16 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
         @Override
         public void open() {
             for (Host host : selectedCluster.getHosts()) {
-                TerminalFactory.newTerminalTopComponent(host.getName());
+                TerminalFactory.newTerminalTopComponent(host.getName()).execute("ssh " + host.getIpAddress());
             }
         }
 
         @Override
-        public void addHost(String hostName) {
-            selectedCluster.getHosts().add(new Host(hostName));
+        public void addHost(String... hostNames) {
+            for (String name : hostNames) {
+                selectedCluster.getHosts().add(new Host(name));
+            }
+
             final Node[] selectedNodes = em.getSelectedNodes();
             try {
                 em.setSelectedNodes(new Node[0]);
@@ -189,6 +190,11 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
             } catch (PropertyVetoException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        @Override
+        public void close() {
+            TerminalFactory.closeAll();
         }
     };
 

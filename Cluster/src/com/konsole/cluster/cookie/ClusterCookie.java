@@ -24,7 +24,9 @@ public interface ClusterCookie {
 
     void removeCluster();
 
-    void addHost(String hostName);
+    void addHost(String... hostNames);
 
     void open();
+
+    void close();
 }

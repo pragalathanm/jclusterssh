@@ -35,7 +35,7 @@ import org.openide.util.NbBundle.Messages;
 )
 @ActionReferences({
     @ActionReference(path = "Menu/Action", position = 200),
-    @ActionReference(path = "Toolbars/Action", position = 200)
+    @ActionReference(path = "Toolbars/ZAction", position = 200)
 })
 @Messages("CTL_OpenClusterAction=Open Cluster")
 public final class OpenClusterAction implements ActionListener {

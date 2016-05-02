@@ -17,6 +17,7 @@
 package com.konsole.term;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,10 +62,9 @@ public class TerminalFactory {
     }
 
     public static void closeAll() {
-        for (TerminalTopComponent openedTerminal : openedTerminals.values()) {
+        for (TerminalTopComponent openedTerminal : new ArrayList<>(openedTerminals.values())) {
             openedTerminal.close();
         }
-        openedTerminals.clear();
     }
 
     public static TerminalTopComponent newTerminalTopComponent(final String title) {
