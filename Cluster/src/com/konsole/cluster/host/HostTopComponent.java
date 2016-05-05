@@ -44,7 +44,7 @@ import org.openide.windows.TopComponent;
 )
 @TopComponent.Description(
         preferredID = "HostTopComponent",
-        //iconBase="SET/PATH/TO/ICON/HERE",
+        iconBase = "com/konsole/cluster/images/host.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
 @TopComponent.Registration(mode = "properties", openAtStartup = true)

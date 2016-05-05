@@ -30,5 +30,6 @@ public class ClusterNode extends DefaultNode<Cluster> {
         super(userObject);
         cluster = userObject;
         setName(cluster.getName());
+        setIconBaseWithExtension("com/konsole/cluster/images/cluster.png");
     }
 }

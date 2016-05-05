@@ -33,6 +33,7 @@ public class HostNode extends DefaultNode<Host> {
         super(userObject);
         host = userObject;
         setName(host.getName());
+        setIconBaseWithExtension("com/konsole/cluster/images/host.png");
     }
 
     @Override

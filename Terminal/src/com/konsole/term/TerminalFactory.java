@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
@@ -67,8 +68,9 @@ public class TerminalFactory {
         }
     }
 
-    public static TerminalTopComponent newTerminalTopComponent(final String title) {
+    public static TerminalTopComponent newTerminalTopComponent(final String title, CountDownLatch latch) {
         if (openedTerminals.containsKey(title)) {
+            latch.countDown();
             return openedTerminals.get(title);
         }
         TerminalTopComponent emulator = new TerminalTopComponent() {
@@ -87,12 +89,12 @@ public class TerminalFactory {
         ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
         if (env != null) {
             String homeDir = System.getProperty("user.home");
-            openTerminalImpl(ioContainer, title, env, homeDir, true);
+            openTerminalImpl(ioContainer, title, env, homeDir, true, latch);
         }
         return emulator;
     }
 
-    private static void openTerminalImpl(final IOContainer ioContainer, final String tabTitle, final ExecutionEnvironment env, final String dir, final boolean silentMode) {
+    private static void openTerminalImpl(final IOContainer ioContainer, final String tabTitle, final ExecutionEnvironment env, final String dir, final boolean silentMode, final CountDownLatch latch) {
 
         final IOProvider term = IOProvider.get("Terminal"); // NOI18N
 
@@ -102,6 +104,7 @@ public class TerminalFactory {
                 public void run() {
                     if (SwingUtilities.isEventDispatchThread()) {
                         ioContainer.requestActive();
+                        latch.countDown();
                     } else {
                         doWork();
                     }

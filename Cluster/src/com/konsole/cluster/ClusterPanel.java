@@ -20,11 +20,14 @@ import com.konsole.cluster.cookie.ClusterCookie;
 import com.konsole.cluster.host.Host;
 import com.konsole.cluster.nodes.factory.ClusterChildFactory;
 import com.konsole.term.TerminalFactory;
+import com.konsole.term.TerminalTopComponent;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
@@ -162,9 +165,34 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
 
         @Override
         public void open() {
-            for (Host host : selectedCluster.getHosts()) {
-                TerminalFactory.newTerminalTopComponent(host.getName()).execute("ssh " + host.getIpAddress());
+            final List<Object[]> terminals = new LinkedList<>();
+            final CountDownLatch latch = new CountDownLatch(selectedCluster.getHosts().size());
+            for (final Host host : selectedCluster.getHosts()) {
+                TerminalTopComponent tc = TerminalFactory.newTerminalTopComponent(host.getName(), latch);
+                terminals.add(new Object[]{host, tc});
             }
+
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        latch.await();
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                for (Object[] e : terminals) {
+                                    Host host = (Host) e[0];
+                                    TerminalTopComponent tc = (TerminalTopComponent) e[1];
+                                    tc.execute("ssh " + host.getIpAddress());
+                                }
+                            }
+                        });
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }.start();
+
         }
 
         @Override
