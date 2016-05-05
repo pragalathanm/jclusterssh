@@ -1,7 +1,4 @@
-<html>
-    <head>
-        <title>JSSH</title>
-    </head> 
+<html> 
     <body>
     <center>
         <h1>JSSH</h1> 

@@ -116,7 +116,7 @@ public final class StartPageTopComponent extends TopComponent {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                String url = toURL("https://htmlpreview.github.io/?https://github.com/pragalathanm/jssh/blob/platform/README.md");
+                String url = toURL("https://htmlpreview.github.io/?https://github.com/pragalathanm/jssh/blob/master/README.md");
                 engine.load(url);
             }
         });
