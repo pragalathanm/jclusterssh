@@ -57,7 +57,7 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_HostAction=Host",
     "CTL_HostTopComponent=Hosts",
-    "HINT_HostTopComponent=Displays all the host of a selected cluster"
+    "HINT_HostTopComponent=Displays all the hosts of a selected cluster"
 })
 public final class HostTopComponent extends TopComponent implements ExplorerManager.Provider {
 
