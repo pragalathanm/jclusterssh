@@ -5,7 +5,6 @@
         <file name="File_hidden"/>
         <file name="Edit_hidden"/>
         <file name="GoTo_hidden"/>
-        <file name="Tools_hidden"/>
         <file name="View_hidden"/>
         <folder name="Window">
             <file name="SwitchToRecentDocumentAction.shadow_hidden"/>
