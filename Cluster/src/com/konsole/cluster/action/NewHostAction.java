@@ -49,7 +49,7 @@ public final class NewHostAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent ev) {
-        String hostName = JOptionPane.showInputDialog("Enter the host name: ");
+        String hostName = JOptionPane.showInputDialog(null, "Multiple hosts can be separated by comma or space.", "Enter the host name(s)", JOptionPane.PLAIN_MESSAGE);
         if (hostName != null && !hostName.isEmpty()) {
             String[] names;
             if (hostName.contains(",")) {
