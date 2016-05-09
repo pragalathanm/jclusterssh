@@ -69,9 +69,10 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
             @Override
             public void resultChanged(LookupEvent ev) {
                 synchronized (lock) {
+                    removeFromLookup(Cluster.class);
                     if (clusterResult.allInstances().size() > 0) {
                         Cluster cluster = clusterResult.allInstances().iterator().next();
-                        replaceInLookup(Cluster.class, cluster);
+                        addToLookup(cluster);
                     }
                 }
             }
@@ -83,20 +84,24 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
             @Override
             public void resultChanged(LookupEvent ev) {
                 synchronized (lock) {
+                    removeFromLookup(ClusterCookie.class);
                     if (clusterCookieResult.allInstances().size() > 0) {
                         ClusterCookie cookie = clusterCookieResult.allInstances().iterator().next();
-                        replaceInLookup(ClusterCookie.class, cookie);
+                        addToLookup(cookie);
                     }
                 }
             }
         });
     }
 
-    private <T> void replaceInLookup(Class<T> clazz, T content) {
+    private <T> void removeFromLookup(Class<T> clazz) {
         // clear the existing content in lookup
-        for (T c : clusterLookup.lookupAll(clazz)) {
+        clusterLookup.lookupAll(clazz).stream().forEach((c) -> {
             clusterIC.remove(c);
-        }
+        });
+    }
+
+    private <T> void addToLookup(T content) {
         // add the selection to lookup
         clusterIC.add(content);
     }

@@ -27,12 +27,13 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void restored() {
-        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-
-            @Override
-            public void run() {
-                ClusterPanel.getInstance().loadClusters();
-            }
+        WindowManager.getDefault().invokeWhenUIReady(() -> {
+            new Thread() {
+                @Override
+                public void run() {
+                    ClusterPanel.getInstance().loadClusters();
+                }
+            }.start();
         });
     }
 

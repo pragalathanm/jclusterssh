@@ -29,20 +29,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -55,6 +55,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
     private ClusterChildFactory clusterChildFactory = new ClusterChildFactory(new ArrayList<Cluster>());
     private Lookup.Result<Cluster> clusterResult;
     private Cluster selectedCluster;
+    private SelectableNode root;
     private static ClusterPanel instance;
     private static final Logger LOG = Logger.getLogger(ClusterPanel.class.getName());
 
@@ -70,23 +71,20 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
 
         Lookup lookup = ExplorerUtils.createLookup(em, this.getActionMap());
         associateLookup(new ProxyLookup(lookup, new AbstractLookup(ic)));
-        AbstractNode root = new AbstractNode(Children.create(clusterChildFactory, true));
+
+        root = new SelectableNode(Children.create(clusterChildFactory, true), em);
         em.setRootContext(root);
         clusterResult = lookup.lookupResult(Cluster.class);
-        clusterResult.addLookupListener(new LookupListener() {
-
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                Collection<? extends Cluster> allInstances = clusterResult.allInstances();
-                if (allInstances.isEmpty()) {
-                    ic.remove(clusterCookie);
-                    selectedCluster = null;
-                } else {
-                    if (getLookup().lookup(ClusterCookie.class) == null) {
-                        ic.add(clusterCookie);
-                    }
-                    selectedCluster = allInstances.iterator().next();
+        clusterResult.addLookupListener((LookupEvent ev) -> {
+            Collection<? extends Cluster> allInstances = clusterResult.allInstances();
+            if (allInstances.isEmpty()) {
+                ic.remove(clusterCookie);
+                selectedCluster = null;
+            } else {
+                if (getLookup().lookup(ClusterCookie.class) == null) {
+                    ic.add(clusterCookie);
                 }
+                selectedCluster = allInstances.iterator().next();
             }
         });
     }
@@ -130,6 +128,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
         if (name != null && !name.isEmpty()) {
             Cluster cluster = new Cluster(name);
             clusterChildFactory.addEntry(cluster);
+            root.selectLastNode();
         }
     }
 
@@ -138,6 +137,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
         try {
             List<Cluster> clusters = StoreManager.getClusters();
             clusterChildFactory.addEntry(clusters);
+            root.selectFirstNode();
         } catch (IOException | ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -160,17 +160,23 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
 
         @Override
         public void removeCluster() {
+            int result = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), "Do you want to delete the cluster '" + em.getSelectedNodes()[0].getName() + "'?");
+            if (result != JOptionPane.YES_OPTION) {
+                return;
+            }
             clusterChildFactory.removeEntry(em.getSelectedNodes());
+            clusterChildFactory.setEntries(clusterChildFactory.getEntries());
+            root.selectFirstNode();
         }
 
         @Override
         public void open() {
             final List<Object[]> terminals = new LinkedList<>();
             final CountDownLatch latch = new CountDownLatch(selectedCluster.getHosts().size());
-            for (final Host host : selectedCluster.getHosts()) {
+            selectedCluster.getHosts().stream().forEach((host) -> {
                 TerminalTopComponent tc = TerminalFactory.newTerminalTopComponent(host.getName(), latch);
                 terminals.add(new Object[]{host, tc});
-            }
+            });
 
             new Thread() {
                 @Override
@@ -178,15 +184,12 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
                     try {
                         Thread.currentThread().wait(2000);
                         latch.await();
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                for (Object[] e : terminals) {
-                                    Host host = (Host) e[0];
-                                    TerminalTopComponent tc = (TerminalTopComponent) e[1];
-                                    tc.execute("ssh " + host.getIpAddress());
-                                }
-                            }
+                        SwingUtilities.invokeLater(() -> {
+                            terminals.stream().forEach((e) -> {
+                                Host host = (Host) e[0];
+                                TerminalTopComponent tc = (TerminalTopComponent) e[1];
+                                tc.execute("ssh " + host.getIpAddress());
+                            });
                         });
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
@@ -205,14 +208,11 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
             final Node[] selectedNodes = em.getSelectedNodes();
             try {
                 em.setSelectedNodes(new Node[0]);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            em.setSelectedNodes(selectedNodes);
-                        } catch (PropertyVetoException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
+                SwingUtilities.invokeLater(() -> {
+                    try {
+                        em.setSelectedNodes(selectedNodes);
+                    } catch (PropertyVetoException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 });
 

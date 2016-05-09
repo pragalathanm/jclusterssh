@@ -36,6 +36,7 @@ public class StoreManager {
     public static List<Cluster> clusters;
     private static final Logger LOG = Logger.getLogger(StoreManager.class.getName());
 
+    @SuppressWarnings("unchecked")
     public static List<Cluster> getClusters() throws IOException, ClassNotFoundException {
         byte[] buffer = NbPreferences.forModule(StoreManager.class).getByteArray("clusters", new byte[0]);
         if (buffer.length == 0) {

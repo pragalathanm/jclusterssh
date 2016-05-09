@@ -21,6 +21,7 @@ import com.konsole.cluster.cookie.HostCookie;
 import com.konsole.cluster.nodes.factory.HostChildFactory;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.swing.JOptionPane;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -30,13 +31,13 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 @ConvertAsProperties(
         dtd = "-//com.konsole.cluster//Host//EN",
@@ -78,29 +79,21 @@ public final class HostTopComponent extends TopComponent implements ExplorerMana
         AbstractNode root = new AbstractNode(Children.create(hostChildFactory, true));
         em.setRootContext(root);
         clusterResult = Utilities.actionsGlobalContext().lookupResult(Cluster.class);
-        clusterResult.addLookupListener(new LookupListener() {
-
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                Collection<? extends Cluster> clusters = clusterResult.allInstances();
-                hostChildFactory.removeAll();
-                if (clusters.size() == 1) {
-                    hostChildFactory.setEntries(clusters.iterator().next().getHosts());
-                }
+        clusterResult.addLookupListener((LookupEvent ev) -> {
+            Collection<? extends Cluster> clusters = clusterResult.allInstances();
+            hostChildFactory.removeAll();
+            if (clusters.size() == 1) {
+                hostChildFactory.setEntries(clusters.iterator().next().getHosts());
             }
         });
         clusterResult.allItems();
 
         hostResult = getLookup().lookupResult(Host.class);
-        hostResult.addLookupListener(new LookupListener() {
-
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                if (clusterResult.allInstances().isEmpty()) {
-                    ic.remove(hostCookie);
-                } else {
-                    ic.add(hostCookie);
-                }
+        hostResult.addLookupListener((LookupEvent ev) -> {
+            if (clusterResult.allInstances().isEmpty()) {
+                ic.remove(hostCookie);
+            } else {
+                ic.add(hostCookie);
             }
         });
     }
@@ -162,10 +155,14 @@ public final class HostTopComponent extends TopComponent implements ExplorerMana
 
         @Override
         public void removeHost() {
-            final Cluster cluster = clusterResult.allInstances().iterator().next();
-            for (Host host : hostResult.allInstances()) {
-                cluster.getHosts().remove(host);
+            int result = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), "Do you want to delete the selected host(s)?");
+            if (result != JOptionPane.YES_OPTION) {
+                return;
             }
+            Cluster cluster = clusterResult.allInstances().iterator().next();
+            hostResult.allInstances().stream().forEach((host) -> {
+                cluster.getHosts().remove(host);
+            });
             hostChildFactory.setEntries(cluster.getHosts());
         }
     };

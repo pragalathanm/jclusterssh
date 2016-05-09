@@ -68,9 +68,10 @@ public abstract class AbstractChildFactory<T> extends ChildFactory<T> {
         refresh(true);
     }
 
+    @SuppressWarnings("unchecked")
     public void removeEntry(Node... nodes) {
         for (Node node : nodes) {
-            entries.remove((T) ((DefaultNode) node).getUserObject());
+            entries.remove(((DefaultNode<T>) node).getUserObject());
         }
         refresh(true);
     }
