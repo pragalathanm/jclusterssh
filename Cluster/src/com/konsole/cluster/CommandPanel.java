@@ -19,6 +19,9 @@ package com.konsole.cluster;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import com.sun.glass.events.KeyEvent;
+import java.awt.Color;
+import java.awt.Graphics;
+import javax.swing.JTextField;
 
 /**
  *
@@ -48,9 +51,10 @@ public class CommandPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        commandTextField = new javax.swing.JTextField();
+        commandTextField = new HintTextField();
 
         commandTextField.setText(org.openide.util.NbBundle.getMessage(CommandPanel.class, "CommandPanel.commandTextField.text")); // NOI18N
+        commandTextField.setToolTipText(org.openide.util.NbBundle.getMessage(CommandPanel.class, "CommandPanel.commandTextField.toolTipText")); // NOI18N
         commandTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 commandTextFieldKeyReleased(evt);
@@ -90,6 +94,22 @@ public class CommandPanel extends javax.swing.JPanel {
         }
     }
 
+    class HintTextField extends JTextField {
+
+        String hint = "Press ENTER key to run the command";
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            if (getText().length() == 0 && !hasFocus()) {
+                g.setColor(Color.LIGHT_GRAY);
+                int padding = (getHeight() - getFont().getSize()) / 2;
+                int inset = 3;
+                g.drawString(hint, inset + 5, getHeight() - padding - inset);
+            }
+        }
+
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField commandTextField;
     // End of variables declaration//GEN-END:variables
