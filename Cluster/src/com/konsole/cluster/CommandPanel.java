@@ -96,7 +96,7 @@ public class CommandPanel extends javax.swing.JPanel {
 
     class HintTextField extends JTextField {
 
-        String hint = "Press ENTER key to run the command";
+        String hint = org.openide.util.NbBundle.getMessage(CommandPanel.class, "CommandPanel.commandTextField.toolTipText");
 
         @Override
         protected void paintComponent(Graphics g) {
