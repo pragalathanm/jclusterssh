@@ -77,6 +77,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
         clusterResult = lookup.lookupResult(Cluster.class);
         clusterResult.addLookupListener((LookupEvent ev) -> {
             Collection<? extends Cluster> allInstances = clusterResult.allInstances();
+            choiceView1.setEnabled(!allInstances.isEmpty());
             if (allInstances.isEmpty()) {
                 ic.remove(clusterCookie);
                 selectedCluster = null;
@@ -138,6 +139,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
             List<Cluster> clusters = StoreManager.getClusters();
             clusterChildFactory.addEntry(clusters);
             root.selectFirstNode();
+            choiceView1.setEnabled(!clusters.isEmpty());
         } catch (IOException | ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
