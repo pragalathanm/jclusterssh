@@ -176,6 +176,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
                 @Override
                 public void run() {
                     try {
+                        Thread.currentThread().wait(2000);
                         latch.await();
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
