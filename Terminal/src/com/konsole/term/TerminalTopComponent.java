@@ -34,12 +34,24 @@ import org.openide.windows.TopComponent;
 public class TerminalTopComponent extends TopComponent {
 
     private final TerminalContainer tc;
+    private final String title;
 
-    public TerminalTopComponent() {
+    public TerminalTopComponent(String title) {
         setLayout(new BorderLayout());
         tc = TerminalContainer.create(TerminalTopComponent.this, "Local");
         add(tc, BorderLayout.CENTER);
+        this.title = title;
+        setName(title);
+    }
 
+    @Override
+    public void setDisplayName(String name) {
+        super.setName(title);
+    }
+
+    @Override
+    public void setHtmlDisplayName(String htmlDisplayName) {
+        super.setName(title);
     }
 
     public IOContainer getIOContainer() {
@@ -87,5 +99,4 @@ public class TerminalTopComponent extends TopComponent {
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
-
 }

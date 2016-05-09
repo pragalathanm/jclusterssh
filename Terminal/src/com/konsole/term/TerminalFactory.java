@@ -73,7 +73,7 @@ public class TerminalFactory {
             latch.countDown();
             return openedTerminals.get(title);
         }
-        TerminalTopComponent emulator = new TerminalTopComponent() {
+        TerminalTopComponent emulator = new TerminalTopComponent(title) {
             @Override
             protected void componentClosed() {
                 super.componentClosed();
