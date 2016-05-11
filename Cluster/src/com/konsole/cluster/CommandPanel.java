@@ -16,12 +16,16 @@
  */
 package com.konsole.cluster;
 
+import com.konsole.term.TerminalCookie;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
 import java.awt.Graphics;
 import javax.swing.JTextField;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -29,7 +33,8 @@ import javax.swing.JTextField;
  */
 public class CommandPanel extends javax.swing.JPanel {
 
-    private static CommandPanel INSTANCE = new CommandPanel();
+    private final Lookup.Result<TerminalCookie> terminalCookieResult;
+    private static final CommandPanel INSTANCE = new CommandPanel();
 
     public static CommandPanel getInstance() {
         return INSTANCE;
@@ -40,6 +45,10 @@ public class CommandPanel extends javax.swing.JPanel {
      */
     public CommandPanel() {
         initComponents();
+        this.terminalCookieResult = Utilities.actionsGlobalContext().lookupResult(TerminalCookie.class);
+        this.terminalCookieResult.addLookupListener((LookupEvent ev) -> {
+            commandTextField.setEnabled(!terminalCookieResult.allInstances().isEmpty());
+        });
     }
 
     /**
@@ -55,6 +64,7 @@ public class CommandPanel extends javax.swing.JPanel {
 
         commandTextField.setText(org.openide.util.NbBundle.getMessage(CommandPanel.class, "CommandPanel.commandTextField.text")); // NOI18N
         commandTextField.setToolTipText(org.openide.util.NbBundle.getMessage(CommandPanel.class, "CommandPanel.commandTextField.toolTipText")); // NOI18N
+        commandTextField.setEnabled(false);
         commandTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 commandTextFieldKeyReleased(evt);

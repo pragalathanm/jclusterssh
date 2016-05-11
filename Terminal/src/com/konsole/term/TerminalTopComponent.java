@@ -24,6 +24,7 @@ import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOContainer;
 import org.openide.windows.TopComponent;
 
@@ -35,6 +36,8 @@ public class TerminalTopComponent extends TopComponent {
 
     private final TerminalContainer tc;
     private final String title;
+    private final TerminalCookie cookie = new TerminalCookie() {
+    };
 
     public TerminalTopComponent(String title) {
         setLayout(new BorderLayout());
@@ -42,6 +45,7 @@ public class TerminalTopComponent extends TopComponent {
         add(tc, BorderLayout.CENTER);
         this.title = title;
         setName(title);
+        associateLookup(Lookups.fixed(cookie));
     }
 
     @Override

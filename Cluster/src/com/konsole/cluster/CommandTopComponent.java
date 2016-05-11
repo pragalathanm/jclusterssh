@@ -16,6 +16,7 @@
  */
 package com.konsole.cluster;
 
+import com.konsole.term.TerminalCookie;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import java.awt.Dimension;
@@ -24,11 +25,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Box;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import org.jdesktop.beansbinding.AutoBinding;
@@ -42,8 +44,11 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -78,16 +83,22 @@ public final class CommandTopComponent extends TopComponent {
 
     public static final String ID = "CommandTopComponent";
     private InstanceContent ic = new InstanceContent();
+    private final Lookup.Result<TerminalCookie> terminalCookieResult;
 
     public CommandTopComponent() {
         initComponents();
         setName(Bundle.CTL_CommandTopComponent());
         setToolTipText(Bundle.HINT_CommandTopComponent());
         associateLookup(new AbstractLookup(ic));
-        commandEditorPane.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), "ENTER_ACTION");
-        commandEditorPane.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "CTRL_L_ACTION");
-        commandEditorPane.getActionMap().put("ENTER_ACTION", ENTER_KEY_ACTION);
-        commandEditorPane.getActionMap().put("CTRL_L_ACTION", CTRL_L_ACTION);
+        commandTextArea.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), "ENTER_ACTION");
+        commandTextArea.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "CTRL_L_ACTION");
+        commandTextArea.getActionMap().put("ENTER_ACTION", ENTER_KEY_ACTION);
+        commandTextArea.getActionMap().put("CTRL_L_ACTION", CTRL_L_ACTION);
+
+        this.terminalCookieResult = Utilities.actionsGlobalContext().lookupResult(TerminalCookie.class);
+        this.terminalCookieResult.addLookupListener((LookupEvent ev) -> {
+            commandTextArea.setEnabled(!terminalCookieResult.allInstances().isEmpty());
+        });
     }
 
     /**
@@ -99,14 +110,25 @@ public final class CommandTopComponent extends TopComponent {
     private void initComponents() {
         bindingGroup = new BindingGroup();
 
-        runButton = new JButton();
-        filler1 = new Box.Filler(new Dimension(0, 0), new Dimension(0, 0), new Dimension(0, 0));
+        jSplitPane1 = new JSplitPane();
+        jPanel1 = new JPanel();
         jScrollPane2 = new JScrollPane();
-        commandEditorPane = new JEditorPane();
+        commandTextArea = new JTextArea();
+        runButton = new JButton();
+        jPanel2 = new JPanel();
+
+        setPreferredSize(new Dimension(300, 430));
+
+        jSplitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setPreferredSize(new Dimension(300, 430));
+
+        commandTextArea.setLineWrap(true);
+        commandTextArea.setEnabled(false);
+        jScrollPane2.setViewportView(commandTextArea);
 
         Mnemonics.setLocalizedText(runButton, NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.runButton.text")); // NOI18N
 
-        Binding binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, commandEditorPane, ELProperty.create("${text}"), runButton, BeanProperty.create("enabled"));
+        Binding binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, commandTextArea, ELProperty.create("${text}"), runButton, BeanProperty.create("enabled"));
         binding.setConverter(STRING_TO_BOOLEAN_CONVERTER);
         bindingGroup.addBinding(binding);
 
@@ -116,39 +138,50 @@ public final class CommandTopComponent extends TopComponent {
             }
         });
 
-        jScrollPane2.setViewportView(commandEditorPane);
+        GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(jScrollPane2)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(runButton)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(runButton)
+                .addGap(0, 75, Short.MAX_VALUE))
+            .addComponent(jScrollPane2)
+        );
+
+        jSplitPane1.setTopComponent(jPanel1);
+
+        GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGap(0, 298, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGap(0, 306, Short.MAX_VALUE)
+        );
+
+        jSplitPane1.setRightComponent(jPanel2);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(filler1, GroupLayout.PREFERRED_SIZE, 82, GroupLayout.PREFERRED_SIZE))
-                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(runButton)))
-                .addContainerGap())
+            .addComponent(jSplitPane1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(runButton))
-                    .addComponent(jScrollPane2, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
-                .addGap(233, 233, 233)
-                .addComponent(filler1, GroupLayout.DEFAULT_SIZE, 104, Short.MAX_VALUE)
-                .addContainerGap())
+            .addComponent(jSplitPane1, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         bindingGroup.bind();
     }// </editor-fold>//GEN-END:initComponents
 
     private void runButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_runButtonActionPerformed
-        executeCommand(commandEditorPane.getText());
+        executeCommand(commandTextArea.getText());
     }//GEN-LAST:event_runButtonActionPerformed
 
     private void executeCommand(String command) {
@@ -160,14 +193,16 @@ public final class CommandTopComponent extends TopComponent {
             openedTerminal.execute(command);
         }
         if (clearTextField) {
-            commandEditorPane.setText("");
+            commandTextArea.setText("");
         }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JEditorPane commandEditorPane;
-    private Box.Filler filler1;
+    private JTextArea commandTextArea;
+    private JPanel jPanel1;
+    private JPanel jPanel2;
     private JScrollPane jScrollPane2;
+    private JSplitPane jSplitPane1;
     private JButton runButton;
     private BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
@@ -210,7 +245,7 @@ public final class CommandTopComponent extends TopComponent {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            executeCommand(commandEditorPane.getText());
+            executeCommand(commandTextArea.getText());
         }
     };
     private final Action CTRL_L_ACTION = new AbstractAction() {
