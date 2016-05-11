@@ -35,7 +35,7 @@ import org.openide.util.NbBundle.Messages;
 )
 @ActionReferences({
     @ActionReference(path = "Menu/Action", position = 250),
-    @ActionReference(path = "Toolbars/ZAction", position = 250)
+    @ActionReference(path = "Toolbars/XAction", position = 250)
 })
 @Messages("CTL_CloseClusterAction=Close Cluster")
 public final class CloseClusterAction implements ActionListener {

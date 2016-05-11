@@ -34,7 +34,7 @@ import org.openide.util.actions.Presenter;
         lazy = false,
         displayName = "#CTL_ClusterSelectionAction"
 )
-@ActionReference(path = "Toolbars/ZAction", position = 150)
+@ActionReference(path = "Toolbars/XAction", position = 150)
 @Messages("CTL_ClusterSelectionAction=Select a Cluster")
 public final class ClusterSelectionAction extends AbstractAction implements Presenter.Toolbar {
 
