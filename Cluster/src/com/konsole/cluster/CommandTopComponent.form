@@ -81,7 +81,6 @@
                 <Component class="javax.swing.JTextArea" name="commandTextArea">
                   <Properties>
                     <Property name="lineWrap" type="boolean" value="true"/>
-                    <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                 </Component>
               </SubComponents>

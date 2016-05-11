@@ -123,7 +123,6 @@ public final class CommandTopComponent extends TopComponent {
         jSplitPane1.setPreferredSize(new Dimension(300, 430));
 
         commandTextArea.setLineWrap(true);
-        commandTextArea.setEnabled(false);
         jScrollPane2.setViewportView(commandTextArea);
 
         Mnemonics.setLocalizedText(runButton, NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.runButton.text")); // NOI18N
