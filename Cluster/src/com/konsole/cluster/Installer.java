@@ -16,6 +16,11 @@
  */
 package com.konsole.cluster;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import org.openide.modules.ModuleInstall;
 import org.openide.windows.WindowManager;
 
@@ -25,8 +30,23 @@ import org.openide.windows.WindowManager;
  */
 public class Installer extends ModuleInstall {
 
+    private static final Logger LOG = Logger.getLogger(Installer.class.getName());
+
     @Override
     public void restored() {
+        try {
+            LookAndFeel selectedLaf = UIManager.getLookAndFeel();
+            if (selectedLaf.getName().equals("Nimbus")) {
+                return;
+            }
+            if (selectedLaf.getName().equals("Metal")) {
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel");
+            } else {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            LOG.log(Level.INFO, "Error setting native LAF: {0}", e);
+        }
         WindowManager.getDefault().invokeWhenUIReady(() -> {
             new Thread() {
                 @Override
