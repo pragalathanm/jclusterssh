@@ -79,8 +79,14 @@ public class TerminalFactory {
                 super.componentClosed();
                 openedTerminals.remove(title);
             }
+
+            @Override
+            protected void componentOpened() {
+                super.componentOpened();
+                openedTerminals.put(title, this);
+            }
         };
-        openedTerminals.put(title, emulator);
+
         WindowManager.getDefault().findMode("editor").dockInto(emulator);
 
         emulator.open();
