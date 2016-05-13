@@ -17,6 +17,7 @@
 package com.konsole.cluster.nodes;
 
 import com.konsole.cluster.host.Host;
+import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -46,7 +47,19 @@ public class HostNode extends DefaultNode<Host> {
         }
 
         try {
-            ss.put(new PropertySupport.Reflection<>(host, String.class, "name"));
+            ss.put(new PropertySupport.ReadWrite<String>("name", String.class, "name", "Name of the host") {
+
+                @Override
+                public String getValue() throws IllegalAccessException, InvocationTargetException {
+                    return host.getName();
+                }
+
+                @Override
+                public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                    host.setName(val);
+                    HostNode.this.setName(val);
+                }
+            });
             ss.put(new PropertySupport.Reflection<>(host, String.class, "ipAddress"));
         } catch (NoSuchMethodException ex) {
             Exceptions.printStackTrace(ex);
