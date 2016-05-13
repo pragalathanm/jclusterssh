@@ -16,7 +16,6 @@
  */
 package com.konsole.cluster;
 
-import com.konsole.term.TerminalCookie;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import java.awt.Dimension;
@@ -44,11 +43,8 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -83,7 +79,6 @@ public final class CommandTopComponent extends TopComponent {
 
     public static final String ID = "CommandTopComponent";
     private InstanceContent ic = new InstanceContent();
-    private final Lookup.Result<TerminalCookie> terminalCookieResult;
 
     public CommandTopComponent() {
         initComponents();
@@ -94,11 +89,6 @@ public final class CommandTopComponent extends TopComponent {
         commandTextArea.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "CTRL_L_ACTION");
         commandTextArea.getActionMap().put("ENTER_ACTION", ENTER_KEY_ACTION);
         commandTextArea.getActionMap().put("CTRL_L_ACTION", CTRL_L_ACTION);
-
-        this.terminalCookieResult = Utilities.actionsGlobalContext().lookupResult(TerminalCookie.class);
-        this.terminalCookieResult.addLookupListener((LookupEvent ev) -> {
-            commandTextArea.setEnabled(!terminalCookieResult.allInstances().isEmpty());
-        });
     }
 
     /**
