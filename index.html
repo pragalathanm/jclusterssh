@@ -1,59 +1,70 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
-    <meta charset="UTF-8">
-    <title>Jssh by pragalathanm</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-  </head>
-  <body>
-    <section class="page-header">
-      <h1 class="project-name">Jssh</h1>
-      <h2 class="project-tagline">Java Based Cluster SSH</h2>
-      <a href="https://github.com/pragalathanm/jssh" class="btn">View on GitHub</a>
-      <a href="https://github.com/pragalathanm/jssh/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/pragalathanm/jssh/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+    <head>
+        <meta charset="UTF-8">
+        <title>Jssh-Java Based Cluster SSH</title>
+        <meta name="description" content="JSSH-Java Based Cluster SSH">
+        <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+        <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    </head>
+    <body>
+        <section class="page-header">
+            <h1 class="project-name">JSSH</h1>
+            <h2 class="project-tagline">Java Based Cluster SSH</h2>
+            <a href="https://github.com/pragalathanm/jssh" class="btn">View on GitHub</a>
+            <a href="https://github.com/pragalathanm/jssh/zipball/master" class="btn">Download .zip</a>
+            <a href="https://github.com/pragalathanm/jssh/tarball/master" class="btn">Download .tar.gz</a>
+        </section>
 
-    <section class="main-content">
-      <p> 
-    </p>
-    
-        <h1>
-<a id="jssh" class="anchor" href="#jssh" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>JSSH</h1> 
-    
-    <p>JSSH allows you to open terminals to multiple hosts. It allows you to tile them in different modes.
-    </p>
-    <p>It also saves your configuration and provides a name space (cluster) to group the machines.</p>
-    <br>
-    <p>Install the following plugin to enable tilling of windows in multiple positions using simple clicks. Below are the steps to install the plugin.</p>
-    <ul>
-        <li>Click <a href="http://plugins.netbeans.org/plugin/56815/tiled-editors">here</a> to download the plugin. Save the plugin to your system</li>
-        <li>Go to <b>Tools-&gt;Plugins-&gt;Downloaded-&gt;Add Plugins</b>. Select the downloaded file.</li>
-        <li>Click 'Install'</li>
-        <li>If it is installed successfuly, you will see a yellow color buttons in your toolbar as shown below.</li>
-    </ul>
-    <p>Tab View:<img src="https://raw.githubusercontent.com/pragalathanm/jssh/gh-pages/screenshots/tab.png"></p>
-    <p>Vertical Tiles:<img src="https://raw.githubusercontent.com/pragalathanm/jssh/gh-pages/screenshots/vertical.png"></p>
-    <p>Horizontal Tiles:<img src="https://raw.githubusercontent.com/pragalathanm/jssh/gh-pages/screenshots/horizontal.png"></p>
-    <p>Matrix Tiles:<img src="https://raw.githubusercontent.com/pragalathanm/jssh/gh-pages/screenshots/matrix.png"></p>
-    <p>Add a cluster and then add hosts. You can also add multiple hosts (comma separated or space separated) in one go. 
-        Once host is added you will be able to associate a name with each host by going to <b>Window-&gt;IDE Tools-&gt;Properties</b> and select a host from host window and edit its name in properties window.</p>
-    <p><img src="https://raw.githubusercontent.com/pragalathanm/jssh/gh-pages/screenshots/properties.png"></p>
-    
+        <section class="main-content">
+            <h1>
+                <a id="jssh" class="anchor" href="#jssh" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>
+                JSSH
+            </h1> 
+
+            <p>JSSH allows you to open terminals to multiple hosts. It allows you to tile them in different modes.
+            It also saves your configuration and provides a namespace to group the machines.</p>
+
+            <h2>Available modes</h2>
+            <span><b>Tab View</b></span><img src="screenshots/tab.png">
+            <span><b>Vertical View</b></span><img src="screenshots/vertical.png">
+            <span><b>Horizontal View</b></span><img src="screenshots/horizontal.png">
+            <span><b>Matrix View</b></span><img src="screenshots/matrix.png">
+            
+            <h2>Adding hosts</h2>
+            <ul>
+                <li>Click on 'Add Cluster' button to add a cluster, a namespace</li>
+                <li>Click on 'Add Host' button to add a host. You can also give multiple host names separated by space or comma</li>
+                <li>Click on 'Open Cluster' button to connect to all the hosts in the selected cluster</li>
+                <li>Once host is added you will be able to associate a name with each host by going to <b>Window-&gt;IDE Tools-&gt;Properties</b> and select a host from host window and edit its name in properties window.</li>
+            </ul>
+            <p><img src="https://raw.githubusercontent.com/pragalathanm/jssh/gh-pages/screenshots/properties.png"></p>
+            
+            <h2>Tiling windows</h2>
+            <p>Install the following plugin to enable tilling of windows in multiple positions using simple clicks. Below are the steps to install the plugin.</p>
+            <ul>
+                <li>Click <a href="http://plugins.netbeans.org/plugin/56815/tiled-editors">here</a> to download the plugin (the .nbm file)</li>
+                <li>Open JSSH</li>
+                <li>Go to <b>Tools-&gt;Plugins-&gt;Downloaded-&gt;Add Plugins</b>. Select the downloaded file.</li>
+                <li>Click 'Install' and follow the instructions shown</li>
+                <li>If it is installed successfully, you will see a yellow color buttons in your toolbar as shown above.</li>
+            </ul>
+            
+            <h2>Executing commands</h2>
+            <p>You can type the command on the text box that is present in the toolbar and press ENTER key. Or if the command is too big to 
+                fit in that text field, you can go to <b>Windows->Commands</b> and type your command in the bigger text box and press ENTER key to execute.</p>
+            <footer class="site-footer">
+                <span class="site-footer-owner"><a href="https://github.com/pragalathanm/jssh">JSSH</a> is maintained by <a href="https://github.com/pragalathanm">Pragalathan M</a>.</span>
+
+                <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+            </footer>
+
+        </section>
 
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/pragalathanm/jssh">Jssh</a> is maintained by <a href="https://github.com/pragalathanm">pragalathanm</a>.</span>
-
-        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
-      </footer>
-
-    </section>
-
-  
-  </body>
+    </body>
 </html>
