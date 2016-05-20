@@ -63,7 +63,7 @@ import org.openide.windows.TopComponent;
         //iconBase="SET/PATH/TO/ICON/HERE", 
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "explorer", openAtStartup = true)
+@TopComponent.Registration(mode = "leftSlidingSide", openAtStartup = true)
 @ActionID(category = "Window", id = "com.konsole.cluster.CommandTopComponent")
 @ActionReference(path = "Menu/Window" /*, position = 333 */)
 @TopComponent.OpenActionRegistration(
@@ -71,8 +71,8 @@ import org.openide.windows.TopComponent;
         preferredID = "CommandTopComponent"
 )
 @Messages({
-    "CTL_CommandAction=Command",
-    "CTL_CommandTopComponent=Command",
+    "CTL_CommandAction=Commands",
+    "CTL_CommandTopComponent=Commands",
     "HINT_CommandTopComponent=This shows the commands view"
 })
 public final class CommandTopComponent extends TopComponent {

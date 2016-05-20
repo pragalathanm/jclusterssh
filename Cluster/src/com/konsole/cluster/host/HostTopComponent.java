@@ -56,7 +56,7 @@ import org.openide.windows.WindowManager;
         preferredID = "HostTopComponent"
 )
 @Messages({
-    "CTL_HostAction=Host",
+    "CTL_HostAction=Hosts",
     "CTL_HostTopComponent=Hosts",
     "HINT_HostTopComponent=Displays all the hosts of a selected cluster"
 })
