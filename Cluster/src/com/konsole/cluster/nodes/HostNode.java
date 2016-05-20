@@ -46,24 +46,38 @@ public class HostNode extends DefaultNode<Host> {
             s.put(ss);
         }
 
-        try {
-            ss.put(new PropertySupport.ReadWrite<String>("name", String.class, "name", "Name of the host") {
+        ss.put(new PropertySupport.ReadWrite<String>("name", String.class, "name", "Name of the host") {
 
-                @Override
-                public String getValue() throws IllegalAccessException, InvocationTargetException {
-                    return host.getName();
-                }
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                return host.getName();
+            }
 
-                @Override
-                public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-                    host.setName(val);
-                    HostNode.this.setName(val);
+            @Override
+            public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                host.setName(val);
+                HostNode.this.setName(val);
+            }
+        });
+        ss.put(new PropertySupport.ReadOnly<String>("ipAddress", String.class, "IP Address", "IP Address") {
+
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                return host.getIpAddress();
+            }
+
+            @Override
+            public Object getValue(String attributeName) {
+                if ("htmlDisplayValue".equals(attributeName)) {
+                    try {
+                        return "<font color='#000000'>" + getValue() + "</font>";
+                    } catch (IllegalAccessException | InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-            });
-            ss.put(new PropertySupport.Reflection<>(host, String.class, "ipAddress"));
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+                return super.getValue(attributeName);
+            }
+        });
         return s;
     }
 }
