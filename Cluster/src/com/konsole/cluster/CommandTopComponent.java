@@ -21,11 +21,15 @@ import com.konsole.term.TerminalTopComponent;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
@@ -79,6 +83,7 @@ public final class CommandTopComponent extends TopComponent {
 
     public static final String ID = "CommandTopComponent";
     private InstanceContent ic = new InstanceContent();
+//    private static final RequestProcessor RP = new RequestProcessor(CommandTopComponent.class);
 
     public CommandTopComponent() {
         initComponents();
@@ -89,6 +94,35 @@ public final class CommandTopComponent extends TopComponent {
         commandTextArea.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "CTRL_L_ACTION");
         commandTextArea.getActionMap().put("ENTER_ACTION", ENTER_KEY_ACTION);
         commandTextArea.getActionMap().put("CTRL_L_ACTION", CTRL_L_ACTION);
+
+//        WindowManager.getDefault().addPropertyChangeListener((PropertyChangeEvent evt) -> {
+//            if ("modes".equals(evt.getPropertyName())) {
+//                System.out.println("==================" + evt);
+//                RP.post(() -> {
+//                    SwingUtilities.invokeLater(() -> {
+//                        Mode mode = WindowManager.getDefault().findMode(CommandTopComponent.this);
+//                        if (mode != null) {
+//                            System.err.println(mode + "mode =============== " + CommandTopComponent.this.getBounds());
+//                        }
+//                    });
+//                }, 500);
+//            }
+//        });
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                updateSplitPane(e.getComponent().getSize());
+            }
+        });
+    }
+
+    private void updateSplitPane(Dimension dim) {
+        if (dim.height > 2 * dim.width || dim.width < 500) {
+            splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        } else {
+            splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+            splitPane.setDividerLocation(dim.width - 300);
+        }
     }
 
     /**
@@ -100,17 +134,19 @@ public final class CommandTopComponent extends TopComponent {
     private void initComponents() {
         bindingGroup = new BindingGroup();
 
-        jSplitPane1 = new JSplitPane();
+        splitPane = new JSplitPane();
         jPanel1 = new JPanel();
         jScrollPane2 = new JScrollPane();
         commandTextArea = new JTextArea();
         runButton = new JButton();
         jPanel2 = new JPanel();
+        jScrollPane1 = new JScrollPane();
+        jList1 = new JList();
 
         setPreferredSize(new Dimension(300, 430));
 
-        jSplitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setPreferredSize(new Dimension(300, 430));
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setOneTouchExpandable(true);
 
         commandTextArea.setLineWrap(true);
         jScrollPane2.setViewportView(commandTextArea);
@@ -144,26 +180,34 @@ public final class CommandTopComponent extends TopComponent {
             .addComponent(jScrollPane2)
         );
 
-        jSplitPane1.setTopComponent(jPanel1);
+        splitPane.setTopComponent(jPanel1);
+
+        jList1.setModel(new AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        jList1.setPreferredSize(new Dimension(100, 85));
+        jScrollPane1.setViewportView(jList1);
 
         GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 298, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGap(0, 306, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
         );
 
-        jSplitPane1.setRightComponent(jPanel2);
+        splitPane.setRightComponent(jPanel2);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(splitPane, GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(splitPane, GroupLayout.Alignment.TRAILING)
         );
 
         bindingGroup.bind();
@@ -188,11 +232,13 @@ public final class CommandTopComponent extends TopComponent {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JTextArea commandTextArea;
+    private JList jList1;
     private JPanel jPanel1;
     private JPanel jPanel2;
+    private JScrollPane jScrollPane1;
     private JScrollPane jScrollPane2;
-    private JSplitPane jSplitPane1;
     private JButton runButton;
+    private JSplitPane splitPane;
     private BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 
