@@ -18,17 +18,23 @@ package com.konsole.cluster;
 
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.LinkedList;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.Action;
 import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -36,6 +42,12 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.SoftBevelBorder;
+import javax.swing.event.ListSelectionEvent;
 import org.jdesktop.beansbinding.AutoBinding;
 import org.jdesktop.beansbinding.BeanProperty;
 import org.jdesktop.beansbinding.Binding;
@@ -83,7 +95,7 @@ public final class CommandTopComponent extends TopComponent {
 
     public static final String ID = "CommandTopComponent";
     private InstanceContent ic = new InstanceContent();
-//    private static final RequestProcessor RP = new RequestProcessor(CommandTopComponent.class);
+    private HistoryListModel historyListModel;
 
     public CommandTopComponent() {
         initComponents();
@@ -95,33 +107,25 @@ public final class CommandTopComponent extends TopComponent {
         commandTextArea.getActionMap().put("ENTER_ACTION", ENTER_KEY_ACTION);
         commandTextArea.getActionMap().put("CTRL_L_ACTION", CTRL_L_ACTION);
 
-//        WindowManager.getDefault().addPropertyChangeListener((PropertyChangeEvent evt) -> {
-//            if ("modes".equals(evt.getPropertyName())) {
-//                System.out.println("==================" + evt);
-//                RP.post(() -> {
-//                    SwingUtilities.invokeLater(() -> {
-//                        Mode mode = WindowManager.getDefault().findMode(CommandTopComponent.this);
-//                        if (mode != null) {
-//                            System.err.println(mode + "mode =============== " + CommandTopComponent.this.getBounds());
-//                        }
-//                    });
-//                }, 500);
-//            }
-//        });
         addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
                 updateSplitPane(e.getComponent().getSize());
             }
         });
+        historyListModel = new HistoryListModel();
+        historyList.setModel(historyListModel);
+        historyList.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            commandTextArea.setText(historyList.getSelectedValue().toString());
+        });
     }
 
     private void updateSplitPane(Dimension dim) {
-        if (dim.height > 2 * dim.width || dim.width < 500) {
-            splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
-        } else {
+        if (dim.height < dim.width && dim.width >= 500) {
             splitPane.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
             splitPane.setDividerLocation(dim.width - 300);
+        } else {
+            splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
         }
     }
 
@@ -140,8 +144,9 @@ public final class CommandTopComponent extends TopComponent {
         commandTextArea = new JTextArea();
         runButton = new JButton();
         jPanel2 = new JPanel();
+        jLabel1 = new JLabel();
         jScrollPane1 = new JScrollPane();
-        jList1 = new JList();
+        historyList = new JList();
 
         setPreferredSize(new Dimension(300, 430));
 
@@ -151,7 +156,9 @@ public final class CommandTopComponent extends TopComponent {
         commandTextArea.setLineWrap(true);
         jScrollPane2.setViewportView(commandTextArea);
 
+        runButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/exec.png"))); // NOI18N
         Mnemonics.setLocalizedText(runButton, NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.runButton.text")); // NOI18N
+        runButton.setHorizontalTextPosition(SwingConstants.CENTER);
 
         Binding binding = Bindings.createAutoBinding(AutoBinding.UpdateStrategy.READ_WRITE, commandTextArea, ELProperty.create("${text}"), runButton, BeanProperty.create("enabled"));
         binding.setConverter(STRING_TO_BOOLEAN_CONVERTER);
@@ -167,44 +174,44 @@ public final class CommandTopComponent extends TopComponent {
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jScrollPane2)
+                .addComponent(runButton, GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(runButton)
-                .addContainerGap())
+                .addComponent(jScrollPane2))
         );
         jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(jScrollPane2)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
                 .addComponent(runButton)
                 .addGap(0, 75, Short.MAX_VALUE))
-            .addComponent(jScrollPane2)
         );
 
         splitPane.setTopComponent(jPanel1);
 
-        jList1.setModel(new AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
-        jList1.setPreferredSize(new Dimension(100, 85));
-        jScrollPane1.setViewportView(jList1);
+        jPanel2.setLayout(new BorderLayout());
 
-        GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
-        );
+        jLabel1.setBackground(UIManager.getDefaults().getColor("Button.focus"));
+        jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
+        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CommandTopComponent.class, "CommandTopComponent.jLabel1.text")); // NOI18N
+        jLabel1.setBorder(new SoftBevelBorder(BevelBorder.RAISED));
+        jLabel1.setOpaque(true);
+        jPanel2.add(jLabel1, BorderLayout.NORTH);
+
+        historyList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        historyList.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent evt) {
+                historyListMouseClicked(evt);
+            }
+        });
+        jScrollPane1.setViewportView(historyList);
+
+        jPanel2.add(jScrollPane1, BorderLayout.CENTER);
 
         splitPane.setRightComponent(jPanel2);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(splitPane, GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
+            .addComponent(splitPane)
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addComponent(splitPane, GroupLayout.Alignment.TRAILING)
@@ -217,6 +224,14 @@ public final class CommandTopComponent extends TopComponent {
         executeCommand(commandTextArea.getText());
     }//GEN-LAST:event_runButtonActionPerformed
 
+    private void historyListMouseClicked(MouseEvent evt) {//GEN-FIRST:event_historyListMouseClicked
+        if (evt.getClickCount() == 2) {
+            String command = historyList.getSelectedValue().toString();
+            historyListModel.remove(historyList.getSelectedIndex());
+            executeCommand(command);
+        }
+    }//GEN-LAST:event_historyListMouseClicked
+
     private void executeCommand(String command) {
         executeCommand(command, true);
     }
@@ -228,11 +243,17 @@ public final class CommandTopComponent extends TopComponent {
         if (clearTextField) {
             commandTextArea.setText("");
         }
+        if (!command.trim().isEmpty() && !command.equals("clear")) {
+            historyListModel.insert(command);
+            historyList.revalidate();
+            historyList.updateUI();
+        }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JTextArea commandTextArea;
-    private JList jList1;
+    private JList historyList;
+    private JLabel jLabel1;
     private JPanel jPanel1;
     private JPanel jPanel2;
     private JScrollPane jScrollPane1;
@@ -290,4 +311,31 @@ public final class CommandTopComponent extends TopComponent {
             executeCommand("clear", false);
         }
     };
+
+    class HistoryListModel extends AbstractListModel<String> {
+
+        LinkedList<String> commands = new LinkedList<>();
+
+        @Override
+        public int getSize() {
+            return commands.size();
+        }
+
+        @Override
+        public String getElementAt(int index) {
+            return commands.get(index);
+        }
+
+        public void insert(String command) {
+            commands.push(command);
+            while (commands.size() > 100) {
+                commands.removeLast();
+            }
+            fireContentsChanged(this, 0, commands.size());
+        }
+
+        public void remove(int index) {
+            commands.remove(index);
+        }
+    }
 }
