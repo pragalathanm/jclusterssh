@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import static javafx.concurrent.Worker.State.FAILED;
 import javafx.embed.swing.JFXPanel;
@@ -69,7 +68,6 @@ public final class StartPageTopComponent extends TopComponent {
         initComponents();
         setName(Bundle.CTL_StartPageTopComponent());
         setToolTipText(Bundle.HINT_StartPageTopComponent());
-//        putClientProperty(TopComponent.PROP_CLOSING_DISABLED, Boolean.TRUE);
         panel.setLayout(new BorderLayout());
         panel.add(jfxPanel, BorderLayout.CENTER);
         createScene();
@@ -77,48 +75,35 @@ public final class StartPageTopComponent extends TopComponent {
 
     private void createScene() {
 
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
+        Platform.runLater(() -> {
+            WebView view = new WebView();
+            engine = view.getEngine();
 
-                WebView view = new WebView();
-                engine = view.getEngine();
+            engine.getLoadWorker()
+                    .exceptionProperty()
+                    .addListener((ObservableValue<? extends Throwable> o, Throwable old, final Throwable value) -> {
+                        if (engine.getLoadWorker().getState() == FAILED) {
+                            SwingUtilities.invokeLater(() -> {
+                                JOptionPane.showMessageDialog(
+                                        panel,
+                                        (value != null)
+                                                ? engine.getLocation() + "\n" + value.getMessage()
+                                                : engine.getLocation() + "\nUnexpected error.",
+                                        "Loading error...",
+                                        JOptionPane.ERROR_MESSAGE);
+                            });
+                        }
+                    });
 
-                engine.getLoadWorker()
-                        .exceptionProperty()
-                        .addListener(new ChangeListener<Throwable>() {
-
-                            @Override
-                            public void changed(ObservableValue<? extends Throwable> o, Throwable old, final Throwable value) {
-                                if (engine.getLoadWorker().getState() == FAILED) {
-                                    SwingUtilities.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            JOptionPane.showMessageDialog(
-                                                    panel,
-                                                    (value != null)
-                                                            ? engine.getLocation() + "\n" + value.getMessage()
-                                                            : engine.getLocation() + "\nUnexpected error.",
-                                                    "Loading error...",
-                                                    JOptionPane.ERROR_MESSAGE);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-
-                jfxPanel.setScene(new Scene(view));
-            }
+            jfxPanel.setScene(new Scene(view));
+            Platform.setImplicitExit(false);
         });
     }
 
     public void loadURL() {
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                String url = toURL("http://pragalathanm.github.io/jssh/");
-                engine.load(url);
-            }
+        Platform.runLater(() -> {
+            String url = toURL("http://pragalathanm.github.io/jssh/");
+            engine.load(url);
         });
     }
 
