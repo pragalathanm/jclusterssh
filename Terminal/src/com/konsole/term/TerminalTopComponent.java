@@ -20,12 +20,30 @@ import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.SwingUtilities;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescriptor;
+import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
+import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.terminal.api.TerminalContainer;
 import org.netbeans.modules.terminal.ioprovider.Terminal;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 import org.openide.windows.TopComponent;
 
 /**
@@ -36,6 +54,8 @@ public class TerminalTopComponent extends TopComponent {
 
     private final TerminalContainer tc;
     private final String title;
+    private CountDownLatch latch = new CountDownLatch(1);
+
     private final TerminalCookie cookie = new TerminalCookie() {
     };
 
@@ -75,14 +95,18 @@ public class TerminalTopComponent extends TopComponent {
     }
 
     public void execute(String command) {
-        Terminal terminal = (Terminal) getIOContainer().getSelected();
-        ActiveTerm at = terminal.term();
         try {
+            ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+            while (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                Thread.sleep(1000);
+            }
+            Terminal terminal = (Terminal) getIOContainer().getSelected();
+            ActiveTerm at = terminal.term();
             OutputStreamWriter outputStreamWriter = at.getOutputStreamWriter();
             outputStreamWriter.write(command);
             outputStreamWriter.write(KeyEvent.VK_ENTER);
             outputStreamWriter.flush();
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -102,5 +126,89 @@ public class TerminalTopComponent extends TopComponent {
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
+    }
+
+    public Runnable connect() {
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
+        if (env == null) {
+            throw new IllegalStateException("env is null");
+        }
+
+        final IOProvider term = IOProvider.get("Terminal"); // NOI18N
+        if (term == null) {
+            throw new IllegalStateException("IOProvider is null");
+        }
+
+        final String homeDir = System.getProperty("user.home");
+        final boolean silentMode = true;
+        final IOContainer ioContainer = getIOContainer();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    ioContainer.requestActive();
+                    latch.countDown();
+                } else {
+                    doWork();
+                }
+            }
+
+            private void doWork() {
+                if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+                    try {
+                        ConnectionManager.getInstance().connectTo(env);
+                    } catch (IOException | ConnectionManager.CancellationException ex) {
+                        return;
+                    }
+                }
+
+                final HostInfo hostInfo;
+                try {
+                    hostInfo = HostInfoUtils.getHostInfo(env);
+                    boolean isSupported = PtySupport.isSupportedFor(env);
+                    if (!isSupported) {
+                        if (!silentMode) {
+                            String message;
+                            if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                                message = NbBundle.getMessage(TerminalFactory.class, "LocalTerminalNotSupported.error.nocygwin"); // NOI18N
+                            } else {
+                                message = NbBundle.getMessage(TerminalFactory.class, "LocalTerminalNotSupported.error"); // NOI18N
+                            }
+                            NotifyDescriptor nd = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
+                            DialogDisplayer.getDefault().notify(nd);
+                        }
+                        return;
+                    }
+                } catch (IOException | ConnectionManager.CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return;
+                }
+
+                final AtomicReference<InputOutput> ioRef = new AtomicReference<>();
+                try {
+                    ioRef.set(term.getIO(title, null, ioContainer));
+                    NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);
+                    String shell = hostInfo.getLoginShell();
+                    if (homeDir != null) {
+                        npb.setWorkingDirectory(homeDir);
+                    }
+                    npb.setExecutable(shell);
+                    NativeExecutionDescriptor descr;
+                    descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(true).inputOutput(ioRef.get());
+                    descr.postExecution(new Runnable() {
+                        @Override
+                        public void run() {
+                            ioRef.get().closeInputOutput();
+                        }
+                    });
+                    NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
+                    Future<Integer> result = es.run();
+                    SwingUtilities.invokeLater(this);
+                } catch (java.util.concurrent.CancellationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        return runnable;
     }
 }
