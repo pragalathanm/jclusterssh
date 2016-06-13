@@ -20,8 +20,15 @@ import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.util.concurrent.CountDownLatch;
+import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
@@ -54,7 +61,12 @@ public class TerminalTopComponent extends TopComponent {
 
     private final TerminalContainer tc;
     private final String title;
-    private CountDownLatch latch = new CountDownLatch(1);
+    private final ExecutorService executor = Executors.newSingleThreadExecutor((Runnable r) -> {
+        Thread thread = new Thread(r);
+        thread.setDaemon(true);
+        return thread;
+    });
+    private BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
     private final TerminalCookie cookie = new TerminalCookie() {
     };
@@ -66,6 +78,50 @@ public class TerminalTopComponent extends TopComponent {
         this.title = title;
         setName(title);
         associateLookup(Lookups.fixed(cookie));
+
+        executor.submit(() -> {
+            RunnableFuture<Optional<OutputStreamWriter>> connectionChecker = new FutureTask<>(() -> {
+                makeBusy(true);
+                Terminal terminal = (Terminal) getIOContainer().getSelected();
+                ActiveTerm at = terminal.term();
+                at.getOut().write("Connecting...\n");
+                try {
+                    return Optional.of(at.getOutputStreamWriter());
+                } catch (IllegalStateException ex) {
+                    // Error: getOutputStreamWriter() can only be used after connect()
+                    return Optional.empty();
+                }
+            });
+
+            try {
+                Optional<OutputStreamWriter> writerWrapper = null;
+                do {
+                    try {
+                        Thread.currentThread().sleep(500);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    SwingUtilities.invokeLater(connectionChecker);
+                    writerWrapper = connectionChecker.get();
+                } while (!writerWrapper.isPresent());
+
+                makeBusy(false);
+
+                OutputStreamWriter outputStreamWriter = writerWrapper.get();
+                while (true && !Thread.interrupted()) {
+                    try {
+                        String command = queue.take();
+                        outputStreamWriter.write(command);
+                        outputStreamWriter.write(KeyEvent.VK_ENTER);
+                        outputStreamWriter.flush();
+                    } catch (IOException | InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            } catch (InterruptedException | ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        });
     }
 
     @Override
@@ -95,20 +151,7 @@ public class TerminalTopComponent extends TopComponent {
     }
 
     public void execute(String command) {
-        try {
-            ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
-            while (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                Thread.sleep(1000);
-            }
-            Terminal terminal = (Terminal) getIOContainer().getSelected();
-            ActiveTerm at = terminal.term();
-            OutputStreamWriter outputStreamWriter = at.getOutputStreamWriter();
-            outputStreamWriter.write(command);
-            outputStreamWriter.write(KeyEvent.VK_ENTER);
-            outputStreamWriter.flush();
-        } catch (IOException | InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        queue.offer(command);
     }
 //    public void clear() {
 //        Terminal terminal = (Terminal) getIOContainer().getSelected();
@@ -147,7 +190,6 @@ public class TerminalTopComponent extends TopComponent {
             public void run() {
                 if (SwingUtilities.isEventDispatchThread()) {
                     ioContainer.requestActive();
-                    latch.countDown();
                 } else {
                     doWork();
                 }
