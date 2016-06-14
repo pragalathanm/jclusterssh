@@ -65,6 +65,7 @@ public class CommandPanel extends TopComponent {
 
             @Override
             public void construct() {
+                // calling this method later to avoid cicular dependency on GlobalActionContextProxy class
                 addListeners();
             }
 

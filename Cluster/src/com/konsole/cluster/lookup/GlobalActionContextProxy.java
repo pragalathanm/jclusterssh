@@ -52,7 +52,7 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
     /**
      * Additional customer content for our custom global lookup:
      */
-    private Lookup specialLookup;
+    private Lookup lookupContainer;
     private final InstanceContent ic;
     private final Result<Command> commandResult;
     private final Result<Cluster> clusterResult;
@@ -65,55 +65,39 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
         this.globalContextLookup = this.globalContextProvider.createGlobalContext();
         // Monitor the existance of a Cluster in the official ClusterPanel lookup:
         this.clusterResult = ClusterPanel.getInstance().getLookup().lookupResult(Cluster.class);
-        this.clusterResult.addLookupListener(new LookupListener() {
-            private final Object lock = new Object();
-
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                synchronized (lock) {
-                    removeFromLookup(Cluster.class);
-                    if (clusterResult.allInstances().size() > 0) {
-                        Cluster cluster = clusterResult.allInstances().iterator().next();
-                        addToLookup(cluster);
-                    }
-                }
-            }
-        });
+        this.clusterResult.addLookupListener(new LookupAdapter(clusterResult, Cluster.class));
         this.clusterCookieResult = ClusterPanel.getInstance().getLookup().lookupResult(ClusterCookie.class);
-        this.clusterCookieResult.addLookupListener(new LookupListener() {
-            private final Object lock = new Object();
-
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                synchronized (lock) {
-                    removeFromLookup(ClusterCookie.class);
-                    if (clusterCookieResult.allInstances().size() > 0) {
-                        ClusterCookie cookie = clusterCookieResult.allInstances().iterator().next();
-                        addToLookup(cookie);
-                    }
-                }
-            }
-        });
+        this.clusterCookieResult.addLookupListener(new LookupAdapter(clusterCookieResult, ClusterCookie.class));
         this.commandResult = CommandPanel.getInstance().getLookup().lookupResult(Command.class);
-        this.commandResult.addLookupListener(new LookupListener() {
-            private final Object lock = new Object();
+        this.commandResult.addLookupListener(new LookupAdapter(commandResult, Command.class));
+    }
 
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                synchronized (lock) {
-                    removeFromLookup(Command.class);
-                    if (commandResult.allInstances().size() > 0) {
-                        Command command = commandResult.allInstances().iterator().next();
-                        addToLookup(command);
-                    }
+    private class LookupAdapter<T> implements LookupListener {
+
+        private final Object lock = new Object();
+        private final Result<T> result;
+        private final Class type;
+
+        LookupAdapter(Result<T> result, Class type) {
+            this.result = result;
+            this.type = type;
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            synchronized (lock) {
+                removeFromLookup(type);
+                if (result.allInstances().size() > 0) {
+                    T item = result.allInstances().iterator().next();
+                    addToLookup(item);
                 }
             }
-        });
+        }
     }
 
     private <T> void removeFromLookup(Class<T> clazz) {
         // clear the existing content in lookup
-        specialLookup.lookupAll(clazz).stream().forEach((c) -> {
+        lookupContainer.lookupAll(clazz).stream().forEach((c) -> {
             ic.remove(c);
         });
     }
@@ -133,8 +117,8 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
     public Lookup createGlobalContext() {
         if (proxyLookup == null) {
             // Create the two lookups that will make up the proxy:
-            specialLookup = new AbstractLookup(ic);
-            proxyLookup = new ProxyLookup(globalContextLookup, specialLookup);
+            lookupContainer = new AbstractLookup(ic);
+            proxyLookup = new ProxyLookup(globalContextLookup, lookupContainer);
         }
         return proxyLookup;
     }
