@@ -16,9 +16,7 @@
  */
 package com.konsole.cluster;
 
-import com.konsole.cluster.lookup.Command;
-import com.konsole.term.TerminalFactory;
-import com.konsole.term.TerminalTopComponent;
+import com.konsole.term.Command;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -250,10 +248,6 @@ public final class CommandTopComponent extends TopComponent {
     }
 
     private void executeCommand(String command, boolean clearTextField) {
-        for (TerminalTopComponent openedTerminal : TerminalFactory.openedTerminals.values()) {
-            openedTerminal.execute(command);
-        }
-
         if (clearTextField) {
             commandTextArea.setText("");
         }

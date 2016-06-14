@@ -16,6 +16,7 @@
  */
 package com.konsole.cluster.lookup;
 
+import com.konsole.term.Command;
 import com.konsole.cluster.Cluster;
 import com.konsole.cluster.ClusterPanel;
 import com.konsole.cluster.CommandPanel;

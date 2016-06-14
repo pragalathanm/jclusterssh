@@ -16,10 +16,8 @@
  */
 package com.konsole.cluster;
 
-import com.konsole.cluster.lookup.Command;
+import com.konsole.term.Command;
 import com.konsole.term.TerminalCookie;
-import com.konsole.term.TerminalFactory;
-import com.konsole.term.TerminalTopComponent;
 import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -71,7 +69,6 @@ public class CommandPanel extends TopComponent {
 
             @Override
             public void finished() {
-
             }
         });
     }
@@ -128,9 +125,6 @@ public class CommandPanel extends TopComponent {
     }
 
     private void executeCommand(String command, boolean clearTextField) {
-        for (TerminalTopComponent openedTerminal : TerminalFactory.openedTerminals.values()) {
-            openedTerminal.execute(command);
-        }
         if (clearTextField) {
             commandTextField.setText("");
         }

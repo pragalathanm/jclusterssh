@@ -30,7 +30,7 @@ import org.openide.windows.WindowManager;
 public class TerminalFactory {
 
     private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
-    public static final Map<String, TerminalTopComponent> openedTerminals = new HashMap<>();
+    private static final Map<String, TerminalTopComponent> openedTerminals = new HashMap<>();
 
     public static void closeOthers(List<String> hosts) {
         Map<String, TerminalTopComponent> toBeClosed = new HashMap<>(openedTerminals);

@@ -20,6 +20,7 @@ import java.awt.BorderLayout;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutionException;
@@ -46,7 +47,10 @@ import org.netbeans.modules.terminal.ioprovider.Terminal;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOProvider;
@@ -61,6 +65,7 @@ public class TerminalTopComponent extends TopComponent {
 
     private final TerminalContainer tc;
     private final String title;
+    private Lookup.Result<Command> lookupResult;
     private final ExecutorService executor = Executors.newSingleThreadExecutor((Runnable r) -> {
         Thread thread = new Thread(r);
         thread.setDaemon(true);
@@ -68,16 +73,14 @@ public class TerminalTopComponent extends TopComponent {
     });
     private BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
-    private final TerminalCookie cookie = new TerminalCookie() {
-    };
-
     public TerminalTopComponent(String title) {
         setLayout(new BorderLayout());
         tc = TerminalContainer.create(TerminalTopComponent.this, "Local");
         add(tc, BorderLayout.CENTER);
         this.title = title;
         setName(title);
-        associateLookup(Lookups.fixed(cookie));
+        associateLookup(Lookups.fixed(new TerminalCookie() {
+        }));
 
         executor.submit(() -> {
             RunnableFuture<Optional<OutputStreamWriter>> connectionChecker = new FutureTask<>(() -> {
@@ -120,6 +123,13 @@ public class TerminalTopComponent extends TopComponent {
                 }
             } catch (InterruptedException | ExecutionException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        });
+        lookupResult = Utilities.actionsGlobalContext().lookupResult(Command.class);
+        lookupResult.addLookupListener((LookupEvent ev) -> {
+            Collection<? extends Command> result = lookupResult.allInstances();
+            if (!result.isEmpty()) {
+                execute(result.iterator().next().text);
             }
         });
     }
