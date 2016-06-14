@@ -16,25 +16,33 @@
  */
 package com.konsole.cluster;
 
+import com.konsole.cluster.lookup.Command;
 import com.konsole.term.TerminalCookie;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import com.sun.glass.events.KeyEvent;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import javax.swing.JTextField;
+import org.openide.util.AsyncGUIJob;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
+import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Pragalathan M <pragalathanm@gmail.com>
  */
-public class CommandPanel extends javax.swing.JPanel {
+public class CommandPanel extends TopComponent {
 
-    private final Lookup.Result<TerminalCookie> terminalCookieResult;
+    private Lookup.Result<TerminalCookie> terminalCookieResult;
     private static final CommandPanel INSTANCE = new CommandPanel();
+    private final InstanceContent ic = new InstanceContent();
 
     public static CommandPanel getInstance() {
         return INSTANCE;
@@ -45,6 +53,29 @@ public class CommandPanel extends javax.swing.JPanel {
      */
     public CommandPanel() {
         initComponents();
+        associateLookup(new AbstractLookup(ic));
+        commandTextField.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                cleanLookup();
+            }
+        });
+        Utilities.attachInitJob(this, new AsyncGUIJob() {
+
+            @Override
+            public void construct() {
+                addListeners();
+            }
+
+            @Override
+            public void finished() {
+
+            }
+        });
+    }
+
+    public void addListeners() {
         this.terminalCookieResult = Utilities.actionsGlobalContext().lookupResult(TerminalCookie.class);
         this.terminalCookieResult.addLookupListener((LookupEvent ev) -> {
             commandTextField.setEnabled(!terminalCookieResult.allInstances().isEmpty());
@@ -102,6 +133,19 @@ public class CommandPanel extends javax.swing.JPanel {
         if (clearTextField) {
             commandTextField.setText("");
         }
+        updateLookup(command);
+    }
+
+    private void updateLookup(String command) {
+        cleanLookup();
+        ic.add(new Command(command));
+    }
+
+    private void cleanLookup() {
+        Command cmd = getLookup().lookup(Command.class);
+        if (cmd != null) {
+            ic.remove(cmd);
+        }
     }
 
     class HintTextField extends JTextField {
@@ -123,4 +167,5 @@ public class CommandPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField commandTextField;
     // End of variables declaration//GEN-END:variables
+
 }

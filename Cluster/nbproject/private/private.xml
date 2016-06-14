@@ -5,8 +5,6 @@
         <group name="hotspot">
             <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/ClusterTopComponent.java</file>
         </group>
-        <group>
-            <file>file:/home/pragalathan/NetBeansProjects/NBPlatform/jcssh/Cluster/src/com/konsole/cluster/StartPageTopComponent.java</file>
-        </group>
+        <group/>
     </open-files>
 </project-private>

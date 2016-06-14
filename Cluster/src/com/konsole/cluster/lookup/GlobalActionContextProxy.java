@@ -18,6 +18,7 @@ package com.konsole.cluster.lookup;
 
 import com.konsole.cluster.Cluster;
 import com.konsole.cluster.ClusterPanel;
+import com.konsole.cluster.CommandPanel;
 import com.konsole.cluster.cookie.ClusterCookie;
 import org.netbeans.modules.openide.windows.GlobalActionContextImpl;
 import org.openide.util.ContextGlobalProvider;
@@ -51,13 +52,14 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
     /**
      * Additional customer content for our custom global lookup:
      */
-    private Lookup clusterLookup;
-    private final InstanceContent clusterIC;
+    private Lookup specialLookup;
+    private final InstanceContent ic;
+    private final Result<Command> commandResult;
     private final Result<Cluster> clusterResult;
     private final Result<ClusterCookie> clusterCookieResult;
 
     public GlobalActionContextProxy() {
-        this.clusterIC = new InstanceContent();
+        this.ic = new InstanceContent();
         // The default GlobalContextProvider:
         this.globalContextProvider = new GlobalActionContextImpl();
         this.globalContextLookup = this.globalContextProvider.createGlobalContext();
@@ -92,18 +94,33 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
                 }
             }
         });
+        this.commandResult = CommandPanel.getInstance().getLookup().lookupResult(Command.class);
+        this.commandResult.addLookupListener(new LookupListener() {
+            private final Object lock = new Object();
+
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                synchronized (lock) {
+                    removeFromLookup(Command.class);
+                    if (commandResult.allInstances().size() > 0) {
+                        Command command = commandResult.allInstances().iterator().next();
+                        addToLookup(command);
+                    }
+                }
+            }
+        });
     }
 
     private <T> void removeFromLookup(Class<T> clazz) {
         // clear the existing content in lookup
-        clusterLookup.lookupAll(clazz).stream().forEach((c) -> {
-            clusterIC.remove(c);
+        specialLookup.lookupAll(clazz).stream().forEach((c) -> {
+            ic.remove(c);
         });
     }
 
     private <T> void addToLookup(T content) {
         // add the selection to lookup
-        clusterIC.add(content);
+        ic.add(content);
     }
 
     /**
@@ -116,8 +133,8 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
     public Lookup createGlobalContext() {
         if (proxyLookup == null) {
             // Create the two lookups that will make up the proxy:
-            clusterLookup = new AbstractLookup(clusterIC);
-            proxyLookup = new ProxyLookup(globalContextLookup, clusterLookup);
+            specialLookup = new AbstractLookup(ic);
+            proxyLookup = new ProxyLookup(globalContextLookup, specialLookup);
         }
         return proxyLookup;
     }

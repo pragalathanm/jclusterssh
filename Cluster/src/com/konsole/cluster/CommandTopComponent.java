@@ -16,6 +16,7 @@
  */
 package com.konsole.cluster;
 
+import com.konsole.cluster.lookup.Command;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import java.awt.BorderLayout;
@@ -27,6 +28,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Collection;
 import java.util.LinkedList;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
@@ -59,8 +61,11 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.windows.TopComponent;
@@ -96,6 +101,7 @@ public final class CommandTopComponent extends TopComponent {
     public static final String ID = "CommandTopComponent";
     private InstanceContent ic = new InstanceContent();
     private HistoryListModel historyListModel;
+    private Lookup.Result<Command> lookupResult;
 
     public CommandTopComponent() {
         initComponents();
@@ -117,6 +123,14 @@ public final class CommandTopComponent extends TopComponent {
         historyList.setModel(historyListModel);
         historyList.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
             commandTextArea.setText(historyList.getSelectedValue().toString());
+        });
+
+        lookupResult = Utilities.actionsGlobalContext().lookupResult(Command.class);
+        lookupResult.addLookupListener((LookupEvent ev) -> {
+            Collection<? extends Command> result = lookupResult.allInstances();
+            if (!result.isEmpty()) {
+                addToHistory(result.iterator().next());
+            }
         });
     }
 
@@ -227,7 +241,6 @@ public final class CommandTopComponent extends TopComponent {
     private void historyListMouseClicked(MouseEvent evt) {//GEN-FIRST:event_historyListMouseClicked
         if (evt.getClickCount() == 2) {
             String command = historyList.getSelectedValue().toString();
-            historyListModel.remove(historyList.getSelectedIndex());
             executeCommand(command);
         }
     }//GEN-LAST:event_historyListMouseClicked
@@ -240,13 +253,28 @@ public final class CommandTopComponent extends TopComponent {
         for (TerminalTopComponent openedTerminal : TerminalFactory.openedTerminals.values()) {
             openedTerminal.execute(command);
         }
+
         if (clearTextField) {
             commandTextArea.setText("");
         }
-        if (!command.trim().isEmpty() && !command.equals("clear")) {
-            historyListModel.insert(command);
-            historyList.revalidate();
-            historyList.updateUI();
+        updateLookup(command);
+    }
+
+    private void addToHistory(Command command) {
+        if (command.isHistoryCommand()) {
+            historyListModel.insert(command.text);
+        }
+    }
+
+    private void updateLookup(String command) {
+        cleanLookup();
+        ic.add(new Command(command));
+    }
+
+    private void cleanLookup() {
+        Command cmd = getLookup().lookup(Command.class);
+        if (cmd != null) {
+            ic.remove(cmd);
         }
     }
 
@@ -265,11 +293,16 @@ public final class CommandTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
-
     }
 
     @Override
     public void componentClosed() {
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        cleanLookup();
     }
 
     void writeProperties(java.util.Properties p) {
@@ -327,15 +360,14 @@ public final class CommandTopComponent extends TopComponent {
         }
 
         public void insert(String command) {
+            if (!commands.isEmpty()) {
+                commands.remove(command);
+            }
             commands.push(command);
             while (commands.size() > 100) {
                 commands.removeLast();
             }
             fireContentsChanged(this, 0, commands.size());
-        }
-
-        public void remove(int index) {
-            commands.remove(index);
         }
     }
 }
