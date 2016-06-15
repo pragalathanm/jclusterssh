@@ -16,11 +16,11 @@
  */
 package com.konsole.cluster.lookup;
 
-import com.konsole.term.Command;
 import com.konsole.cluster.Cluster;
 import com.konsole.cluster.ClusterPanel;
 import com.konsole.cluster.CommandPanel;
 import com.konsole.cluster.cookie.ClusterCookie;
+import com.konsole.term.Command;
 import org.netbeans.modules.openide.windows.GlobalActionContextImpl;
 import org.openide.util.ContextGlobalProvider;
 import org.openide.util.Lookup;
@@ -66,25 +66,27 @@ public class GlobalActionContextProxy implements ContextGlobalProvider {
         this.globalContextLookup = this.globalContextProvider.createGlobalContext();
         // Monitor the existance of a Cluster in the official ClusterPanel lookup:
         this.clusterResult = ClusterPanel.getInstance().getLookup().lookupResult(Cluster.class);
-        this.clusterResult.addLookupListener(new LookupAdapter(clusterResult, Cluster.class));
+        this.clusterResult.addLookupListener(new LookupAdapter<>(clusterResult, Cluster.class));
         this.clusterCookieResult = ClusterPanel.getInstance().getLookup().lookupResult(ClusterCookie.class);
-        this.clusterCookieResult.addLookupListener(new LookupAdapter(clusterCookieResult, ClusterCookie.class));
+        this.clusterCookieResult.addLookupListener(new LookupAdapter<>(clusterCookieResult, ClusterCookie.class));
         this.commandResult = CommandPanel.getInstance().getLookup().lookupResult(Command.class);
-        this.commandResult.addLookupListener(new LookupAdapter(commandResult, Command.class));
+        this.commandResult.addLookupListener(new LookupAdapter<>(commandResult, Command.class));
     }
 
     private class LookupAdapter<T> implements LookupListener {
 
         private final Object lock = new Object();
         private final Result<T> result;
-        private final Class type;
+        private final Class<T> type;
 
-        LookupAdapter(Result<T> result, Class type) {
+        @SuppressWarnings("rawtypes")
+        LookupAdapter(Result<T> result, Class<T> type) {
             this.result = result;
             this.type = type;
         }
 
         @Override
+        @SuppressWarnings({"rawtypes", "unchecked"})
         public void resultChanged(LookupEvent ev) {
             synchronized (lock) {
                 removeFromLookup(type);
