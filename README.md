@@ -4,7 +4,6 @@
         <h1>JSSH</h1> 
     </center>
     <p>JSSH allows you to open terminals to multiple hosts. It allows you to tile them in different modes. It also saves your configuration and provides a name space (cluster) to group the machines.</p>
-
     <p><b>Project Page:</b> <a href="http://pragalathanm.github.io/jssh">http://pragalathanm.github.io/jssh</a></p>
     <br/>
     <p>Install the following plugin to enable tilling of windows in multiple positions using simple clicks. Below are the steps to install the plugin.</p>
