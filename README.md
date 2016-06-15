@@ -29,7 +29,7 @@
         <li>Java 8.0+</li>
     </ul>
     Checkout the code and open the project in Netbeans. You are good to go.
-    <body>
+    </body>
 </html>
 
 
