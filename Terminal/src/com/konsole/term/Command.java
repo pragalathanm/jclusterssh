@@ -26,11 +26,10 @@ public class Command {
 
     public Command(String text) {
         assert text != null;
-        assert !text.trim().isEmpty();
-        this.text = text.trim();
+        this.text = text;
     }
 
     public boolean isHistoryCommand() {
-        return !text.equals("clear");
+        return !text.equals("clear") && !text.trim().isEmpty();
     }
 }
