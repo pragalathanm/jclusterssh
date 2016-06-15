@@ -17,8 +17,8 @@
 package com.konsole.cluster;
 
 import com.konsole.cluster.cookie.ClusterCookie;
-import com.konsole.cluster.host.Host;
 import com.konsole.cluster.nodes.factory.ClusterChildFactory;
+import com.konsole.term.Host;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
 import java.beans.PropertyVetoException;
@@ -50,7 +50,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
 
     private InstanceContent ic = new InstanceContent();
     private ExplorerManager em = new ExplorerManager();
-    private ClusterChildFactory clusterChildFactory = new ClusterChildFactory(new ArrayList<Cluster>());
+    private ClusterChildFactory clusterChildFactory = new ClusterChildFactory(new ArrayList<>());
     private Lookup.Result<Cluster> clusterResult;
     private Cluster selectedCluster;
     private SelectableNode root;
@@ -172,8 +172,10 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
         @Override
         public void open() {
             selectedCluster.getHosts().stream().forEach((host) -> {
-                TerminalTopComponent tc = TerminalFactory.newTerminalTopComponent(host.getName());
-                tc.execute("ssh " + host.getIpAddress());
+                if (!TerminalFactory.getTerminalTopComponent(host).isPresent()) {
+                    TerminalTopComponent tc = TerminalFactory.newTerminalTopComponent(host);
+                    tc.execute("ssh " + host.getIpAddress());
+                }
             });
         }
 
@@ -201,7 +203,9 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
 
         @Override
         public void close() {
-            TerminalFactory.closeAll();
+            selectedCluster.getHosts().stream().forEach((host) -> {
+                TerminalFactory.getTerminalTopComponent(host).ifPresent(t -> t.close());
+            });
         }
     };
 

@@ -16,7 +16,7 @@
  */
 package com.konsole.cluster.nodes;
 
-import com.konsole.cluster.host.Host;
+import com.konsole.term.Host;
 import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;

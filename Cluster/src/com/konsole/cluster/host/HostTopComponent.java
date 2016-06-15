@@ -16,6 +16,7 @@
  */
 package com.konsole.cluster.host;
 
+import com.konsole.term.Host;
 import com.konsole.cluster.Cluster;
 import com.konsole.cluster.cookie.HostCookie;
 import com.konsole.cluster.nodes.factory.HostChildFactory;

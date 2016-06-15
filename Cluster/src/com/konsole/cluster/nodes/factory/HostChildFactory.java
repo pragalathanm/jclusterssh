@@ -16,7 +16,7 @@
  */
 package com.konsole.cluster.nodes.factory;
 
-import com.konsole.cluster.host.Host;
+import com.konsole.term.Host;
 import com.konsole.cluster.nodes.HostNode;
 import java.util.ArrayList;
 import java.util.List;

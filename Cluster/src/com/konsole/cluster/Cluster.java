@@ -16,7 +16,7 @@
  */
 package com.konsole.cluster;
 
-import com.konsole.cluster.host.Host;
+import com.konsole.term.Host;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;

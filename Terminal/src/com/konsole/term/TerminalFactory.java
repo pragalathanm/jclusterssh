@@ -16,10 +16,9 @@
  */
 package com.konsole.term;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -30,38 +29,39 @@ import org.openide.windows.WindowManager;
 public class TerminalFactory {
 
     private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
-    private static final Map<String, TerminalTopComponent> openedTerminals = new HashMap<>();
+    private static final Map<Host, TerminalTopComponent> openedTerminals = new HashMap<>();
 
-    public static void closeOthers(List<String> hosts) {
-        Map<String, TerminalTopComponent> toBeClosed = new HashMap<>(openedTerminals);
-        toBeClosed.keySet().removeAll(hosts);
-        for (TerminalTopComponent openedTerminal : toBeClosed.values()) {
-            openedTerminal.close();
-        }
-        openedTerminals.keySet().retainAll(hosts);
+//    public static void closeOthers(List<String> hosts) {
+//        Map<Host, TerminalTopComponent> toBeClosed = new HashMap<>(openedTerminals);
+//        toBeClosed.keySet().removeAll(hosts);
+//        toBeClosed.values().stream().forEach((terminal) -> terminal.close());
+//        openedTerminals.keySet().retainAll(hosts);
+//    }
+//
+//    public static void closeAll() {
+//        for (TerminalTopComponent openedTerminal : new ArrayList<>(openedTerminals.values())) {
+//            openedTerminal.close();
+//        }
+//    }
+    public static Optional<TerminalTopComponent> getTerminalTopComponent(Host host) {
+        return Optional.ofNullable(openedTerminals.get(host));
     }
 
-    public static void closeAll() {
-        for (TerminalTopComponent openedTerminal : new ArrayList<>(openedTerminals.values())) {
-            openedTerminal.close();
+    public static TerminalTopComponent newTerminalTopComponent(final Host host) {
+        if (openedTerminals.containsKey(host)) {
+            throw new IllegalStateException("Terminal for this host[" + host.getName() + "] is already opened");
         }
-    }
-
-    public static TerminalTopComponent newTerminalTopComponent(final String title) {
-        if (openedTerminals.containsKey(title)) {
-            return openedTerminals.get(title);
-        }
-        TerminalTopComponent emulator = new TerminalTopComponent(title) {
+        TerminalTopComponent emulator = new TerminalTopComponent(host.getName()) {
             @Override
             protected void componentClosed() {
                 super.componentClosed();
-                openedTerminals.remove(title);
+                openedTerminals.remove(host);
             }
 
             @Override
             protected void componentOpened() {
                 super.componentOpened();
-                openedTerminals.put(title, this);
+                openedTerminals.put(host, this);
             }
         };
 
