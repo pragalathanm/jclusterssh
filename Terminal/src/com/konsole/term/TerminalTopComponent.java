@@ -100,7 +100,7 @@ public class TerminalTopComponent extends TopComponent {
                 Optional<OutputStreamWriter> writerWrapper = null;
                 do {
                     try {
-                        Thread.currentThread().sleep(500);
+                        Thread.sleep(500);
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     }
