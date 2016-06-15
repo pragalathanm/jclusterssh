@@ -26,6 +26,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import javax.swing.AbstractAction;
@@ -59,6 +60,7 @@ import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.NbBundle;
@@ -287,10 +289,28 @@ public final class CommandTopComponent extends TopComponent {
 
     @Override
     public void componentOpened() {
+        if (!historyListModel.initialized) {
+            try {
+                historyListModel.commands.addAll(StoreManager.getCommandHistory());
+                historyListModel.initialized = true;
+            } catch (IOException | ClassNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     @Override
     public void componentClosed() {
+    }
+
+    public void storeHistory() {
+        if (historyListModel.initialized) {
+            try {
+                StoreManager.setCommandHistory(historyListModel.commands);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
     @Override
@@ -342,6 +362,7 @@ public final class CommandTopComponent extends TopComponent {
     class HistoryListModel extends AbstractListModel<String> {
 
         LinkedList<String> commands = new LinkedList<>();
+        boolean initialized;
 
         @Override
         public int getSize() {

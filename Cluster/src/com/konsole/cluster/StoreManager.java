@@ -59,4 +59,27 @@ public class StoreManager {
         }
         NbPreferences.forModule(StoreManager.class).putByteArray("clusters", out.toByteArray());
     }
+
+    @SuppressWarnings("unchecked")
+    public static List<String> getCommandHistory() throws IOException, ClassNotFoundException {
+        byte[] buffer = NbPreferences.forModule(StoreManager.class).getByteArray("commands", new byte[0]);
+        if (buffer.length == 0) {
+            LOG.info("No command was saved prviously.");
+            return new ArrayList<>();
+        }
+        try (ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(buffer))) {
+            return (List<String>) stream.readObject();
+        }
+    }
+
+    public static void setCommandHistory(List<String> commands) throws IOException {
+        if (commands == null) {
+            commands = new ArrayList<>();
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (ObjectOutputStream stream = new ObjectOutputStream(out)) {
+            stream.writeObject(commands);
+        }
+        NbPreferences.forModule(StoreManager.class).putByteArray("commands", out.toByteArray());
+    }
 }

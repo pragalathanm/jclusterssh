@@ -60,6 +60,7 @@ public class Installer extends ModuleInstall {
     @Override
     public boolean closing() {
         ClusterPanel.getInstance().storeClusters();
+        ((CommandTopComponent) WindowManager.getDefault().findTopComponent(CommandTopComponent.ID)).storeHistory();
         return true;
     }
 }
