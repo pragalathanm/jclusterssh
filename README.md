@@ -20,7 +20,6 @@
     <p>Add a cluster and then add hosts. You can also add multiple hosts (comma separated or space separated) in one go. 
         Once host is added you will be able to associate a name with each host by going to <b>Window->IDE Tools->Properties</b> and select a host from host window and edit its name in properties window.</p>
     <p><img src="screenshots/properties.png"></p>
-
     <h2>Build</h2>
     You need the following software to build the project locally.
     <ul>
