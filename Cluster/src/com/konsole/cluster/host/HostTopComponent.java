@@ -16,10 +16,10 @@
  */
 package com.konsole.cluster.host;
 
-import com.konsole.term.Host;
 import com.konsole.cluster.Cluster;
 import com.konsole.cluster.cookie.HostCookie;
 import com.konsole.cluster.nodes.factory.HostChildFactory;
+import com.konsole.term.Host;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JOptionPane;
@@ -65,7 +65,7 @@ public final class HostTopComponent extends TopComponent implements ExplorerMana
 
     private ExplorerManager em = new ExplorerManager();
     private InstanceContent ic = new InstanceContent();
-    private HostChildFactory hostChildFactory = new HostChildFactory(new ArrayList<Host>());
+    private HostChildFactory hostChildFactory = new HostChildFactory(new ArrayList<>());
     private Lookup.Result<Cluster> clusterResult;
     private Lookup.Result<Host> hostResult;
 
@@ -112,22 +112,22 @@ public final class HostTopComponent extends TopComponent implements ExplorerMana
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        listView1 = new org.openide.explorer.view.ListView();
+        hostListView = new org.openide.explorer.view.ListView();
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(listView1, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
+            .addComponent(hostListView, javax.swing.GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(listView1, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
+            .addComponent(hostListView, javax.swing.GroupLayout.DEFAULT_SIZE, 459, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.openide.explorer.view.ListView listView1;
+    private org.openide.explorer.view.ListView hostListView;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -152,19 +152,15 @@ public final class HostTopComponent extends TopComponent implements ExplorerMana
         // TODO read your settings according to their version
     }
 
-    private HostCookie hostCookie = new HostCookie() {
-
-        @Override
-        public void removeHost() {
-            int result = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), "Do you want to delete the selected host(s)?");
-            if (result != JOptionPane.YES_OPTION) {
-                return;
-            }
-            Cluster cluster = clusterResult.allInstances().iterator().next();
-            hostResult.allInstances().stream().forEach((host) -> {
-                cluster.getHosts().remove(host);
-            });
-            hostChildFactory.setEntries(cluster.getHosts());
+    private HostCookie hostCookie = () -> {
+        int result = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), "Do you want to delete the selected host(s)?");
+        if (result != JOptionPane.YES_OPTION) {
+            return;
         }
+        Cluster cluster = clusterResult.allInstances().iterator().next();
+        hostResult.allInstances().stream().forEach((host) -> {
+            cluster.getHosts().remove(host);
+        });
+        hostChildFactory.setEntries(cluster.getHosts());
     };
 }

@@ -16,8 +16,10 @@
  */
 package com.konsole.cluster.nodes;
 
+import com.konsole.cluster.action.OpenTerminalAction;
 import com.konsole.term.Host;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.Action;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
@@ -29,12 +31,19 @@ import org.openide.util.Exceptions;
 public class HostNode extends DefaultNode<Host> {
 
     private final Host host;
+    private final OpenTerminalAction openTerminalAction;
 
     public HostNode(Host userObject) {
         super(userObject);
         host = userObject;
         setName(host.getName());
         setIconBaseWithExtension("com/konsole/cluster/images/host.png");
+        openTerminalAction = new OpenTerminalAction(host);
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return openTerminalAction;
     }
 
     @Override
