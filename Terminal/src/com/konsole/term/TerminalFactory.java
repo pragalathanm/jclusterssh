@@ -31,18 +31,6 @@ public class TerminalFactory {
     private static final RequestProcessor RP = new RequestProcessor("Terminal Action RP", 100); // NOI18N
     private static final Map<Host, TerminalTopComponent> openedTerminals = new HashMap<>();
 
-//    public static void closeOthers(List<String> hosts) {
-//        Map<Host, TerminalTopComponent> toBeClosed = new HashMap<>(openedTerminals);
-//        toBeClosed.keySet().removeAll(hosts);
-//        toBeClosed.values().stream().forEach((terminal) -> terminal.close());
-//        openedTerminals.keySet().retainAll(hosts);
-//    }
-//
-//    public static void closeAll() {
-//        for (TerminalTopComponent openedTerminal : new ArrayList<>(openedTerminals.values())) {
-//            openedTerminal.close();
-//        }
-//    }
     public static Optional<TerminalTopComponent> getTerminalTopComponent(Host host) {
         return Optional.ofNullable(openedTerminals.get(host));
     }

@@ -68,6 +68,18 @@ public class HostNode extends DefaultNode<Host> {
                 HostNode.this.setName(val);
             }
         });
+        ss.put(new PropertySupport.ReadWrite<String>("user", String.class, "user", "SSH User") {
+
+            @Override
+            public String getValue() throws IllegalAccessException, InvocationTargetException {
+                return host.getUser();
+            }
+
+            @Override
+            public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+                host.setUser(val);
+            }
+        });
         ss.put(new PropertySupport.ReadOnly<String>("ipAddress", String.class, "IP Address", "IP Address") {
 
             @Override

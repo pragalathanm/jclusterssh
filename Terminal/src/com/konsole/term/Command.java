@@ -32,4 +32,13 @@ public class Command {
     public boolean isHistoryCommand() {
         return !text.equals("clear") && !text.trim().isEmpty();
     }
+
+    public static Command newSshCommand(Host host) {
+        StringBuilder test = new StringBuilder("ssh ");
+        if (host.getUser() != null && !host.getUser().isEmpty()) {
+            test.append(host.getUser()).append("@");
+        }
+        test.append(host.getIpAddress());
+        return new Command(test.toString());
+    }
 }

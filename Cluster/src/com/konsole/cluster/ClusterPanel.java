@@ -18,6 +18,7 @@ package com.konsole.cluster;
 
 import com.konsole.cluster.cookie.ClusterCookie;
 import com.konsole.cluster.nodes.factory.ClusterChildFactory;
+import com.konsole.term.Command;
 import com.konsole.term.Host;
 import com.konsole.term.TerminalFactory;
 import com.konsole.term.TerminalTopComponent;
@@ -174,7 +175,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
             selectedCluster.getHosts().stream().forEach((host) -> {
                 if (!TerminalFactory.getTerminalTopComponent(host).isPresent()) {
                     TerminalTopComponent tc = TerminalFactory.newTerminalTopComponent(host);
-                    tc.execute("ssh " + host.getIpAddress());
+                    tc.execute(Command.newSshCommand(host).text);
                 }
             });
         }

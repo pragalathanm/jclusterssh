@@ -27,17 +27,15 @@ public class Host implements Serializable {
 
     private String name;
     private String ipAddress;
+    private String user;
 
     public Host() {
     }
 
     public Host(String name) {
-        this(name, name);
-    }
-
-    public Host(String name, String ipAddress) {
         this.name = name;
-        this.ipAddress = ipAddress;
+        this.ipAddress = name.contains("@") ? name.substring(name.indexOf("@") + 1) : name;
+        this.user = name.contains("@") ? name.substring(0, name.indexOf("@")).trim() : null;
     }
 
     public String getName() {
@@ -54,6 +52,14 @@ public class Host implements Serializable {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public String getUser() {
+        return user;
+    }
+
+    public void setUser(String user) {
+        this.user = user;
     }
 
     @Override
