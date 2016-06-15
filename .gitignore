@@ -3,3 +3,4 @@
 /Cluster/build/
 /dist/
 **/private.xml
+branding/**/Bundle.properties
