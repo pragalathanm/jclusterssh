@@ -15,9 +15,9 @@
         <section class="page-header">
             <h1 class="project-name">JSSH</h1>
             <h2 class="project-tagline">Java Based Cluster SSH</h2>
-            <div class="btn-linux"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0/jssh-linux.sh" class="btn os">&nbsp; </a></div>
-            <div class="btn-osx"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0/jssh-macosx.tgz" class="btn os">&nbsp; </a></div>
-            <div class="btn-windows"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0/jssh-windows.exe" class="btn os">&nbsp; </a></div>
+            <div class="btn-linux"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0/jssh-linux.sh" class="btn os" title="Linux Download">&nbsp; </a></div>
+            <div class="btn-osx"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0/jssh-macosx.tgz" class="btn os" title="Mac Download">&nbsp; </a></div>
+            <div class="btn-windows"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0/jssh-windows.exe" class="btn os" title="Windows Download">&nbsp; </a></div>
             <a href="https://github.com/pragalathanm/jssh" class="btn">View on GitHub</a>
             <a href="https://github.com/pragalathanm/jssh/zipball/master" class="btn">Source.zip</a>
             <a href="https://github.com/pragalathanm/jssh/tarball/master" class="btn">Source.tar.gz</a>
@@ -50,7 +50,7 @@
             <h2>Tiling windows</h2>
             <p>Install the following plugin to enable tilling of windows in multiple positions using simple clicks. Below are the steps to install the plugin.</p>
             <ul>
-                <li>Click <a href="http://plugins.netbeans.org/plugin/56815/tiled-editors">here</a> to download the plugin (the .nbm file)</li>
+                <li>Download the plugin (the .nbm file) from <i>http://plugins.netbeans.org/plugin/56815/tiled-editors</i></li>
                 <li>Open JSSH</li>
                 <li>Go to <b>Tools-&gt;Plugins-&gt;Downloaded-&gt;Add Plugins</b>. Select the downloaded file.</li>
                 <li>Click 'Install' and follow the instructions shown</li>
@@ -60,6 +60,67 @@
             <h2>Executing commands</h2>
             <p>You can type the command on the text box that is present in the toolbar and press ENTER key. Or if the command is too big to 
                 fit in that text field, you can go to <b>Windows->Command</b> and type your command in the bigger text box and press ENTER key to execute.</p>
+            
+            <h2>FAQ</h2>
+            <div class="faq">
+                <div>
+                    <h4>How many modes are supported for tiling of terminals?</h4>
+                    Four. Tab, vertical, horizontal & matrix.
+                </div>
+                <div>
+                    <h4>Can I have more than one cluster at a time?</h4>
+                    Yes. You can create as many clusters as you want.
+                </div>
+                <div>
+                    <h4>Can I open more than one cluster at a time?</h4>
+                    Yes. Select the cluster you want to load and then click on 'Open Cluster' button that is next to it.
+                </div>
+                <div>
+                    <h4>Can I close a specific cluster?</h4>
+                    Yes. Select the cluster you want to close and then click on 'Close Cluster' button.
+                </div>
+                <div>
+                    <h4>I closed a terminal of a cluster. Can I open only that terminal again?</h4>
+                    Yes. You can double click the host in the 'Hosts' panel to open any closed terminal.
+                    You can also select the cluster and then click on 'Open Cluster' button. This will open all the hosts in the cluster that were closed.
+                </div>
+                <div>
+                    <h4>How do edit the name of a host?</h4>
+                    Select the host from <b>Windows-&gt;Hosts</b>; select the host. Go to <b>Windows-&gt;IDE Tools-&gt;Properties</b> and then edit the name field.
+                </div>
+                <div>
+                    <h4>Is the command history maintained?</h4>
+                    Yes. Under <b>Windows-&gt;Commands</b> view, you can see the history of commands that were executed.
+                </div>
+                <div>
+                    <h4>How do I run a command from history?</h4>
+                    Double click the desired command from history view, to run.
+                </div>
+                <div>
+                    <h4>I want to edit a command from history before running it. Is it possible?</h4>
+                    Yes. (Single) Click the desired command from history view; it will appear in the command field. You can edit and run.
+                </div>
+                <div>
+                    <h4>Can I delete a host(s)?</h4>
+                    Select the host(s) from <b>Windows-&gt;Hosts</b> and then click on the 'Remove Host' button from the toolbar.
+                </div>
+                <div>
+                    <h4>Can I delete a cluster?</h4>
+                    Select the cluster and then click on the 'Remove cluster' button from the toolbar.
+                </div>
+                <div>
+                    <h4>Can I undo deletion of host or cluster?</h4>
+                    No. It is not supported yet.
+                </div>
+                <div>
+                    <h4>This is not working in Windows OS. How do I make it work?</h4>
+                    You need to install <a href="https://www.cygwin.com/">Cygwin</a>. Restart JSSH after that; it will work.
+                </div>
+            </div>
+            
+            <h2>Installation</h2>
+            JSSH requires Java 8 or better. Download the appropriate package for your OS from the top of this page and run.
+            
             <footer class="site-footer">
                 <span class="site-footer-owner"><a href="https://github.com/pragalathanm/jssh">JSSH</a> is maintained by <a href="https://github.com/pragalathanm">Pragalathan M</a>.</span>
 
