@@ -23,6 +23,7 @@ import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -83,7 +84,7 @@ public class TerminalTopComponent extends TopComponent {
         }));
 
         executor.submit(() -> {
-            RunnableFuture<Optional<OutputStreamWriter>> connectionChecker = new FutureTask<>(() -> {
+            Callable<Optional<OutputStreamWriter>> runnable = () -> {
                 makeBusy(true);
                 Terminal terminal = (Terminal) getIOContainer().getSelected();
                 ActiveTerm at = terminal.term();
@@ -94,7 +95,7 @@ public class TerminalTopComponent extends TopComponent {
                     // Error: getOutputStreamWriter() can only be used after connect()
                     return Optional.empty();
                 }
-            });
+            };
 
             try {
                 Optional<OutputStreamWriter> writerWrapper = null;
@@ -104,6 +105,7 @@ public class TerminalTopComponent extends TopComponent {
                     } catch (InterruptedException ex) {
                         Exceptions.printStackTrace(ex);
                     }
+                    RunnableFuture<Optional<OutputStreamWriter>> connectionChecker = new FutureTask<>(runnable);
                     SwingUtilities.invokeLater(connectionChecker);
                     writerWrapper = connectionChecker.get();
                 } while (!writerWrapper.isPresent());
@@ -163,18 +165,6 @@ public class TerminalTopComponent extends TopComponent {
     public void execute(String command) {
         queue.offer(command);
     }
-//    public void clear() {
-//        Terminal terminal = (Terminal) getIOContainer().getSelected();
-//        ActiveTerm at = terminal.term();
-//        try {
-//            OutputStreamWriter outputStreamWriter = at.getOutputStreamWriter();
-//            outputStreamWriter.write('clear');
-//            outputStreamWriter.write(KeyEvent.VK_ENTER);
-//            outputStreamWriter.flush();
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//        }
-//    }
 
     @Override
     public int getPersistenceType() {
@@ -247,11 +237,8 @@ public class TerminalTopComponent extends TopComponent {
                     npb.setExecutable(shell);
                     NativeExecutionDescriptor descr;
                     descr = new NativeExecutionDescriptor().controllable(true).frontWindow(true).inputVisible(true).inputOutput(ioRef.get());
-                    descr.postExecution(new Runnable() {
-                        @Override
-                        public void run() {
-                            ioRef.get().closeInputOutput();
-                        }
+                    descr.postExecution(() -> {
+                        ioRef.get().closeInputOutput();
                     });
                     NativeExecutionService es = NativeExecutionService.newService(npb, descr, "Terminal Emulator"); // NOI18N
                     Future<Integer> result = es.run();
