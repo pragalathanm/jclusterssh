@@ -2,3 +2,4 @@
 /build/
 /Cluster/build/
 /dist/
+**/private.xml
