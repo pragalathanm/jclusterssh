@@ -15,9 +15,9 @@
         <section class="page-header">
             <h1 class="project-name">JSSH</h1>
             <h2 class="project-tagline">Java Based Cluster SSH</h2>
-            <div class="btn-linux"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0.1/jssh-linux.sh" class="btn os" title="Linux Download">&nbsp; </a></div>
-            <div class="btn-osx"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0.1/jssh-macosx.tgz" class="btn os" title="Mac Download">&nbsp; </a></div>
-            <div class="btn-windows"><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0.1/jssh-windows.exe" class="btn os" title="Windows Download">&nbsp; </a></div>
+            <div class="btn-linux"><b><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0.1/jssh-linux.sh" style="color:#e89e4c;" class="btn os" id="linux" title="Linux Download">&nbsp; </a></b></div>
+            <div class="btn-osx"><b><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0.1/jssh-macosx.tgz" class="btn os" id="osx" title="Mac Download">&nbsp; </a></b></div>
+            <div class="btn-windows"><b><a href="https://github.com/pragalathanm/jssh/releases/download/v1.0.1/jssh-windows.exe" style="color:yellow;" class="btn os" id="windows" title="Windows Download">&nbsp; </a></b></div>
             <a href="https://github.com/pragalathanm/jssh" class="btn">View on GitHub</a>
             <a href="https://github.com/pragalathanm/jssh/zipball/master" class="btn">Source.zip</a>
             <a href="https://github.com/pragalathanm/jssh/tarball/master" class="btn">Source.tar.gz</a>
@@ -27,17 +27,17 @@
             <h1>
                 <a id="jssh" class="anchor" href="#jssh" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>
                 JSSH
-            </h1> 
-
+            </h1>
+            
             <p>JSSH allows you to open terminals to multiple hosts. It allows you to tile them in different modes.
-            It also saves your configuration and provides a namespace to group the machines.</p>
+                It also saves your configuration and provides a namespace to group the machines.</p>
 
             <h2>Available modes</h2>
             <span><b>Tab View</b></span><img src="screenshots/tab.png">
             <span><b>Vertical View</b></span><img src="screenshots/vertical.png">
             <span><b>Horizontal View</b></span><img src="screenshots/horizontal.png">
             <span><b>Matrix View</b></span><img src="screenshots/matrix.png">
-            
+
             <h2>Adding hosts</h2>
             <ul>
                 <li>Click on 'New Cluster' button to add a cluster, a namespace</li>
@@ -46,7 +46,7 @@
                 <li>Once host is added you will be able to associate a name with each host by going to <b>Window-&gt;IDE Tools-&gt;Properties</b> and select a host from host window and edit its name in properties window.</li>
             </ul>
             <p><img src="https://raw.githubusercontent.com/pragalathanm/jssh/gh-pages/screenshots/properties.png"></p>
-            
+
             <h2>Tiling windows</h2>
             <p>Install the following plugin to enable tilling of windows in multiple positions using simple clicks. Below are the steps to install the plugin.</p>
             <ul>
@@ -56,11 +56,11 @@
                 <li>Click 'Install' and follow the instructions shown</li>
                 <li>If it is installed successfully, you will see a yellow color buttons in your toolbar as shown above.</li>
             </ul>
-            
+
             <h2>Executing commands</h2>
             <p>You can type the command on the text box that is present in the toolbar and press ENTER key. Or if the command is too big to 
                 fit in that text field, you can go to <b>Windows->Command</b> and type your command in the bigger text box and press ENTER key to execute.</p>
-            
+
             <h2>FAQ</h2>
             <div class="faq">
                 <div>
@@ -117,10 +117,10 @@
                     You need to install <a href="https://www.cygwin.com/">Cygwin</a>. Restart JSSH after that; it will work.
                 </div>
             </div>
-            
+
             <h2>Installation</h2>
             JSSH requires Java 8 or better. Download the appropriate package for your OS from the top of this page and run.
-            
+
             <footer class="site-footer">
                 <span class="site-footer-owner"><a href="https://github.com/pragalathanm/jssh">JSSH</a> is maintained by <a href="https://github.com/pragalathanm">Pragalathan M</a>.</span>
 
@@ -130,5 +130,42 @@
         </section>
 
 
+        <script>
+            var xhttp = new XMLHttpRequest();
+            function ajaxCall(url, callback) {
+                xhttp.onreadystatechange = function () {
+                    if (xhttp.readyState === 4 && xhttp.status === 200) {
+                        callback(xhttp.responseText);
+                    }
+                };
+                xhttp.open("GET", url, true);
+                xhttp.send();
+            }
+            (function() {
+                var release_tag = 'v1.0.1';
+                var assets = {
+                    'jssh-linux.sh': 'linux',
+                    'jssh-macosx.tgz': 'osx',
+                    'jssh-windows.exe': 'windows',
+                    'jssh.zip': 'Zip'
+                };
+                var downloads = {};
+                ajaxCall("https://api.github.com/repos/pragalathanm/jssh/releases", function (response) {
+                    var releases = JSON.parse(response);
+                    for (i = 0; i < releases.length; i++) {
+                        if (releases[i].tag_name === release_tag) {
+                            for (a in releases[i].assets) {
+                                var asset = releases[i].assets[a];
+                                downloads[assets[asset.name]] = asset.download_count;
+                            }
+                            break;
+                        }
+                    }
+                    document.getElementById("linux").innerHTML = downloads["linux"];
+                    document.getElementById("windows").innerHTML = downloads["windows"];
+                    document.getElementById("osx").innerHTML = downloads["osx"];
+                });
+            })();
+        </script>
     </body>
 </html>
