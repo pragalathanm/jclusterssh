@@ -56,7 +56,6 @@ public class TerminalFactory {
         WindowManager.getDefault().findMode("editor").dockInto(emulator);
 
         emulator.open();
-        RP.post(emulator.connect());
         return emulator;
     }
 }
