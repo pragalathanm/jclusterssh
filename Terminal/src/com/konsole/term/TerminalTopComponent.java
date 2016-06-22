@@ -18,8 +18,15 @@ package com.konsole.term;
 
 import com.konsole.term.Command.TerminalExecution;
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Optional;
@@ -34,8 +41,15 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -78,6 +92,7 @@ public class TerminalTopComponent extends TopComponent {
     private Future<Integer> ptyProcess;
     private Future<?> commandLoop;
     private BlockingQueue<Command> queue = new LinkedBlockingQueue<>();
+    private boolean snoozed;
 
     public TerminalTopComponent(String title) {
         setLayout(new BorderLayout());
@@ -93,7 +108,7 @@ public class TerminalTopComponent extends TopComponent {
         lookupResult = Utilities.actionsGlobalContext().lookupResult(Command.class);
         lookupResult.addLookupListener((LookupEvent ev) -> {
             Collection<? extends Command> result = lookupResult.allInstances();
-            if (!result.isEmpty()) {
+            if (!snoozed && !result.isEmpty()) {
                 execute(result.iterator().next());
             }
         });
@@ -108,6 +123,19 @@ public class TerminalTopComponent extends TopComponent {
     @Override
     public void setHtmlDisplayName(String htmlDisplayName) {
         super.setName(title);
+    }
+
+    public boolean isSnoozed() {
+        return snoozed;
+    }
+
+    public void setSnoozed(boolean snoozed) {
+        this.snoozed = snoozed;
+        if (snoozed) {
+            super.setHtmlDisplayName("<html><b><i>" + title + "</i></b></html>");
+        } else {
+            super.setHtmlDisplayName(title);
+        }
     }
 
     public IOContainer getIOContainer() {
@@ -212,16 +240,26 @@ public class TerminalTopComponent extends TopComponent {
 
     class CommandExecutorTask implements Runnable {
 
+        private void addMouseListener(Terminal terminal, JComponent comp) {
+            // remove the old listener first
+            for (MouseListener ml : comp.getMouseListeners()) {
+                if (ml.getClass().getEnclosingClass() == org.netbeans.modules.terminal.ioprovider.Terminal.class) {
+                    comp.removeMouseListener(ml);
+                    break;
+                }
+            }
+            comp.addMouseListener(new PopupListener(terminal, comp));
+        }
+
         @Override
         public void run() {
             Callable<Optional<TerminalExecution>> runnable = () -> {
                 Terminal terminal = (Terminal) getIOContainer().getSelected();
-                ActiveTerm at = terminal.term();
                 try {
-                    return Optional.of(new TerminalExecutionImpl(at.getOutputStreamWriter(), at.getScreen()));
+                    return Optional.of(new TerminalExecutionImpl(terminal));
                 } catch (IllegalStateException ex) {
                     // Error: getOutputStreamWriter() can only be used after connect()
-                    at.getOut().write("\nConnecting...");
+                    terminal.term().getOut().write("\nConnecting...");
                     return Optional.empty();
                 }
             };
@@ -233,7 +271,9 @@ public class TerminalTopComponent extends TopComponent {
 
                 makeBusy(false);
 
-                TerminalExecution execution = wrapper.get();
+                TerminalExecutionImpl execution = (TerminalExecutionImpl) wrapper.get();
+                execution.getTerminal().setClosable(false);
+                addMouseListener(execution.getTerminal(), execution.getComponent());
                 while (true && !Thread.interrupted()) {
                     try {
                         queue.take().execute(execution);
@@ -249,14 +289,165 @@ public class TerminalTopComponent extends TopComponent {
         }
     }
 
+    class PopupListener extends MouseAdapter {
+
+        private final Terminal terminal;
+        private final JComponent comp;
+
+        private static final String BOOLEAN_STATE_ACTION_KEY = "boolean_state_action";	// NOI18N
+        private static final String BOOLEAN_STATE_ENABLED_KEY = "boolean_state_enabled";	// NOI18N
+
+        public PopupListener(Terminal terminal, JComponent comp) {
+            this.terminal = terminal;
+            this.comp = comp;
+            createActions(terminal);
+        }
+
+        private boolean isBooleanStateAction(Action a) {
+            Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);	//
+            return isBooleanStateAction != null && isBooleanStateAction;
+        }
+
+        // On UNIX popup on press
+        // On Windows popup on release.
+        // See http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4119064
+        @Override
+        public void mousePressed(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), comp);
+                postPopupMenu(p, terminal, comp);
+            }
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            if (e.isPopupTrigger()) {
+                Point p = SwingUtilities.convertPoint((Component) e.getSource(), e.getPoint(), comp);
+                postPopupMenu(p, terminal, comp);
+            }
+        }
+
+        private void addMenuItem(JPopupMenu menu, Object o) {
+            if (o instanceof JSeparator) {
+                menu.add((JSeparator) o);
+            } else if (o instanceof Action) {
+                Action a = (Action) o;
+                if (isBooleanStateAction(a)) {
+                    JCheckBoxMenuItem item = new JCheckBoxMenuItem(a);
+                    item.setSelected((Boolean) a.getValue(BOOLEAN_STATE_ENABLED_KEY));
+                    menu.add(item);
+                } else {
+                    menu.add((Action) o);
+                }
+            }
+        }
+
+        private void postPopupMenu(Point p, Terminal terminal, JComponent comp) {
+            JPopupMenu menu = new JPopupMenu();
+            menu.putClientProperty("container", getIOContainer()); // NOI18N
+            menu.putClientProperty("component", terminal);             // NOI18N
+
+            addMenuItem(menu, copyAction);
+            addMenuItem(menu, pasteAction);
+            addMenuItem(menu, new JSeparator());
+            addMenuItem(menu, wrapAction);
+            addMenuItem(menu, largerFontAction);
+            addMenuItem(menu, smallerFontAction);
+            addMenuItem(menu, new JSeparator());
+            addMenuItem(menu, clearAction);
+            addMenuItem(menu, new JSeparator());
+            addMenuItem(menu, snoozeAction);
+
+            menu.addPopupMenuListener(new PopupMenuListener() {
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
+            menu.show(comp, p.x, p.y);
+        }
+
+        private void createActions(Terminal terminal) {
+            Class<?>[] actions = Terminal.class.getDeclaredClasses();
+            try {
+                for (Class<?> a : actions) {
+                    if (!AbstractAction.class.isAssignableFrom(a)) {
+                        continue;
+                    }
+                    Constructor<?> constructor = a.getConstructor(Terminal.class);
+                    constructor.setAccessible(true);
+                    Action action = (Action) constructor.newInstance(terminal);
+                    switch (a.getSimpleName()) {
+                        case "CopyAction":
+                            copyAction = action;
+                            break;
+                        case "PasteAction":
+                            pasteAction = action;
+                            break;
+                        case "ClearAction":
+                            clearAction = action;
+                            break;
+                        case "WrapAction":
+                            wrapAction = action;
+                            break;
+                        case "LargerFontAction":
+                            largerFontAction = action;
+                            break;
+                        case "SmallerFontAction":
+                            smallerFontAction = action;
+                            break;
+                    }
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            snoozeAction = new AbstractAction("Snooze") {
+                {
+                    putValue(BOOLEAN_STATE_ACTION_KEY, true);
+                }
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    setSnoozed(!isSnoozed());
+                }
+
+                @Override
+                public Object getValue(String key) {
+                    if (key.equals(BOOLEAN_STATE_ENABLED_KEY)) {
+                        return isSnoozed();
+                    } else {
+                        return super.getValue(key);
+                    }
+                }
+            };
+        }
+        private Action copyAction;
+        private Action pasteAction;
+        private Action snoozeAction;
+        private Action wrapAction;
+        private Action clearAction;
+        private Action largerFontAction;
+        private Action smallerFontAction;
+    }
+
     class TerminalExecutionImpl implements Command.TerminalExecution {
 
         private Writer output;
         private JComponent component;
+        private Terminal terminal;
 
-        public TerminalExecutionImpl(Writer output, JComponent component) {
-            this.output = output;
-            this.component = component;
+        public TerminalExecutionImpl(Terminal terminal) {
+            ActiveTerm term = terminal.term();
+            this.output = term.getOutputStreamWriter();
+            this.component = term.getScreen();
+            this.terminal = terminal;
         }
 
         @Override
@@ -267,6 +458,10 @@ public class TerminalTopComponent extends TopComponent {
         @Override
         public JComponent getComponent() {
             return component;
+        }
+
+        public Terminal getTerminal() {
+            return terminal;
         }
     }
 }
