@@ -205,7 +205,10 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
         @Override
         public void close() {
             selectedCluster.getHosts().stream().forEach((host) -> {
-                TerminalFactory.getTerminalTopComponent(host).ifPresent(t -> t.close());
+                TerminalFactory.getTerminalTopComponent(host).ifPresent(t -> {
+                    t.close();
+                    t.dispose();
+                });
             });
         }
     };

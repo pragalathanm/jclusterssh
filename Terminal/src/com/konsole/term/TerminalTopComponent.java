@@ -75,6 +75,7 @@ public class TerminalTopComponent extends TopComponent {
         return thread;
     });
     private Future<Integer> ptyProcess;
+    private Future<?> commandLoop;
     private BlockingQueue<String> queue = new LinkedBlockingQueue<>();
 
     public TerminalTopComponent(String title) {
@@ -110,6 +111,11 @@ public class TerminalTopComponent extends TopComponent {
 
     public IOContainer getIOContainer() {
         return tc.ioContainer();
+    }
+
+    public void dispose() {
+        commandLoop.cancel(true);
+        executor.submit(() -> ptyProcess.cancel(true));
     }
 
     @Override
@@ -193,7 +199,7 @@ public class TerminalTopComponent extends TopComponent {
                 });
                 NativeExecutionService2 es = NativeExecutionService2.newService(npb, descr, "Terminal Emulator"); // NOI18N
                 ptyProcess = es.run(() -> {
-                    executor.submit(new CommandExecutorTask());
+                    commandLoop = executor.submit(new CommandExecutorTask());
                 });
                 SwingUtilities.invokeAndWait(() -> ioContainer.requestActive());
             } catch (CancellationException | InterruptedException | InvocationTargetException ex) {
@@ -233,11 +239,13 @@ public class TerminalTopComponent extends TopComponent {
                         outputStreamWriter.write(command);
                         outputStreamWriter.write(KeyEvent.VK_ENTER);
                         outputStreamWriter.flush();
-                    } catch (IOException | InterruptedException ex) {
+                    } catch (InterruptedException ex) {
+                        break;
+                    } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            } catch (InterruptedException | ExecutionException ex) {
+            } catch (ExecutionException | InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
