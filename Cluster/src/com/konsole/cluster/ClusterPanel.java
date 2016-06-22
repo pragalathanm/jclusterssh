@@ -175,7 +175,7 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
             selectedCluster.getHosts().stream().forEach((host) -> {
                 if (!TerminalFactory.getTerminalTopComponent(host).isPresent()) {
                     TerminalTopComponent tc = TerminalFactory.newTerminalTopComponent(host);
-                    tc.execute(Command.newSshCommand(host).text);
+                    tc.execute(Command.newSshCommand(host));
                 }
             });
         }

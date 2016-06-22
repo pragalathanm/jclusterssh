@@ -17,6 +17,7 @@
 package com.konsole.cluster;
 
 import com.konsole.term.Command;
+import com.konsole.term.Command.TextCommand;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -24,6 +25,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
@@ -168,6 +171,11 @@ public final class CommandTopComponent extends TopComponent {
         splitPane.setOneTouchExpandable(true);
 
         commandTextArea.setLineWrap(true);
+        commandTextArea.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent evt) {
+                commandTextAreaKeyReleased(evt);
+            }
+        });
         jScrollPane2.setViewportView(commandTextArea);
 
         runButton.setIcon(new ImageIcon(getClass().getResource("/com/konsole/cluster/images/exec.png"))); // NOI18N
@@ -245,6 +253,16 @@ public final class CommandTopComponent extends TopComponent {
         }
     }//GEN-LAST:event_historyListMouseClicked
 
+    private void commandTextAreaKeyReleased(KeyEvent evt) {//GEN-FIRST:event_commandTextAreaKeyReleased
+        if (evt.isControlDown()) {
+            if (evt.getKeyCode() == com.sun.glass.events.KeyEvent.VK_L) {
+                updateLookup(Command.newClearCommand());
+            } else if (evt.getKeyCode() == com.sun.glass.events.KeyEvent.VK_C) {
+                updateLookup(Command.newCtrlCCommand());
+            }
+        }
+    }//GEN-LAST:event_commandTextAreaKeyReleased
+
     private void executeCommand(String command) {
         executeCommand(command, true);
     }
@@ -253,21 +271,21 @@ public final class CommandTopComponent extends TopComponent {
         if (clearTextField) {
             commandTextArea.setText("");
         }
-        updateLookup(command);
+        updateLookup(Command.newCommand(command));
     }
 
     private void addToHistory(Command command) {
-        if (command.isHistoryCommand()) {
-            historyListModel.insert(command.text);
+        if (command instanceof TextCommand && command.isHistoryCommand()) {
+            historyListModel.insert(((TextCommand) command).text);
         }
     }
 
-    private void updateLookup(String command) {
-        cleanLookup();
-        ic.add(new Command(command));
+    private void updateLookup(Command command) {
+        clearLookup();
+        ic.add(command);
     }
 
-    private void cleanLookup() {
+    private void clearLookup() {
         Command cmd = getLookup().lookup(Command.class);
         if (cmd != null) {
             ic.remove(cmd);
@@ -316,7 +334,7 @@ public final class CommandTopComponent extends TopComponent {
     @Override
     protected void componentDeactivated() {
         super.componentDeactivated();
-        cleanLookup();
+        clearLookup();
     }
 
     void writeProperties(java.util.Properties p) {

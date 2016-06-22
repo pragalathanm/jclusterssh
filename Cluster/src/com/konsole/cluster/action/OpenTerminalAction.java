@@ -42,7 +42,7 @@ public class OpenTerminalAction extends AbstractAction {
         Optional<TerminalTopComponent> terminal = TerminalFactory.getTerminalTopComponent(host);
         if (!terminal.isPresent()) {
             TerminalTopComponent tc = TerminalFactory.newTerminalTopComponent(host);
-            tc.execute(Command.newSshCommand(host).text);
+            tc.execute(Command.newSshCommand(host));
         } else {
             terminal.get().requestActive();
         }

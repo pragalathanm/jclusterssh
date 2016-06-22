@@ -56,7 +56,7 @@ public class CommandPanel extends TopComponent {
 
             @Override
             public void focusLost(FocusEvent e) {
-                cleanLookup();
+                clearLookup();
             }
         });
         Utilities.attachInitJob(this, new AsyncGUIJob() {
@@ -115,8 +115,12 @@ public class CommandPanel extends TopComponent {
     private void commandTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_commandTextFieldKeyReleased
         if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
             executeCommand(commandTextField.getText());
-        } else if (evt.isControlDown() && evt.getKeyCode() == KeyEvent.VK_L) {
-            executeCommand("clear", false);
+        } else if (evt.isControlDown()) {
+            if (evt.getKeyCode() == KeyEvent.VK_L) {
+                updateLookup(Command.newClearCommand());
+            } else if (evt.getKeyCode() == KeyEvent.VK_C) {
+                updateLookup(Command.newCtrlCCommand());
+            }
         }
     }//GEN-LAST:event_commandTextFieldKeyReleased
 
@@ -128,15 +132,15 @@ public class CommandPanel extends TopComponent {
         if (clearTextField) {
             commandTextField.setText("");
         }
-        updateLookup(command);
+        updateLookup(Command.newCommand(command));
     }
 
-    private void updateLookup(String command) {
-        cleanLookup();
-        ic.add(new Command(command));
+    private void updateLookup(Command command) {
+        clearLookup();
+        ic.add(command);
     }
 
-    private void cleanLookup() {
+    private void clearLookup() {
         Command cmd = getLookup().lookup(Command.class);
         if (cmd != null) {
             ic.remove(cmd);

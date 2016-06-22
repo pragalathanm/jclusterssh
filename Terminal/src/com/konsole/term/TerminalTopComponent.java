@@ -16,10 +16,10 @@
  */
 package com.konsole.term;
 
+import com.konsole.term.Command.TerminalExecution;
 import java.awt.BorderLayout;
-import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Optional;
@@ -34,6 +34,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -76,7 +77,7 @@ public class TerminalTopComponent extends TopComponent {
     });
     private Future<Integer> ptyProcess;
     private Future<?> commandLoop;
-    private BlockingQueue<String> queue = new LinkedBlockingQueue<>();
+    private BlockingQueue<Command> queue = new LinkedBlockingQueue<>();
 
     public TerminalTopComponent(String title) {
         setLayout(new BorderLayout());
@@ -93,7 +94,7 @@ public class TerminalTopComponent extends TopComponent {
         lookupResult.addLookupListener((LookupEvent ev) -> {
             Collection<? extends Command> result = lookupResult.allInstances();
             if (!result.isEmpty()) {
-                execute(result.iterator().next().text);
+                execute(result.iterator().next());
             }
         });
         executor.submit(connect());
@@ -130,7 +131,7 @@ public class TerminalTopComponent extends TopComponent {
         tc.componentDeactivated();
     }
 
-    public void execute(String command) {
+    public void execute(Command command) {
         queue.offer(command);
     }
 
@@ -213,11 +214,11 @@ public class TerminalTopComponent extends TopComponent {
 
         @Override
         public void run() {
-            Callable<Optional<OutputStreamWriter>> runnable = () -> {
+            Callable<Optional<TerminalExecution>> runnable = () -> {
                 Terminal terminal = (Terminal) getIOContainer().getSelected();
                 ActiveTerm at = terminal.term();
                 try {
-                    return Optional.of(at.getOutputStreamWriter());
+                    return Optional.of(new TerminalExecutionImpl(at.getOutputStreamWriter(), at.getScreen()));
                 } catch (IllegalStateException ex) {
                     // Error: getOutputStreamWriter() can only be used after connect()
                     at.getOut().write("\nConnecting...");
@@ -226,19 +227,16 @@ public class TerminalTopComponent extends TopComponent {
             };
 
             try {
-                RunnableFuture<Optional<OutputStreamWriter>> connectionChecker = new FutureTask<>(runnable);
+                RunnableFuture<Optional<TerminalExecution>> connectionChecker = new FutureTask<>(runnable);
                 SwingUtilities.invokeLater(connectionChecker);
-                Optional<OutputStreamWriter> writerWrapper = connectionChecker.get();
+                Optional<TerminalExecution> wrapper = connectionChecker.get();
 
                 makeBusy(false);
 
-                OutputStreamWriter outputStreamWriter = writerWrapper.get();
+                TerminalExecution execution = wrapper.get();
                 while (true && !Thread.interrupted()) {
                     try {
-                        String command = queue.take();
-                        outputStreamWriter.write(command);
-                        outputStreamWriter.write(KeyEvent.VK_ENTER);
-                        outputStreamWriter.flush();
+                        queue.take().execute(execution);
                     } catch (InterruptedException ex) {
                         break;
                     } catch (IOException ex) {
@@ -248,6 +246,27 @@ public class TerminalTopComponent extends TopComponent {
             } catch (ExecutionException | InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+    }
+
+    class TerminalExecutionImpl implements Command.TerminalExecution {
+
+        private Writer output;
+        private JComponent component;
+
+        public TerminalExecutionImpl(Writer output, JComponent component) {
+            this.output = output;
+            this.component = component;
+        }
+
+        @Override
+        public Writer getOutput() {
+            return output;
+        }
+
+        @Override
+        public JComponent getComponent() {
+            return component;
         }
     }
 }

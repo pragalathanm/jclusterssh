@@ -47,6 +47,7 @@ public class Installer extends ModuleInstall {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             LOG.log(Level.INFO, "Error setting native LAF: {0}", e);
         }
+//        System.getProperties().put("Term.debug", "keys");
         WindowManager.getDefault().invokeWhenUIReady(() -> {
             new Thread() {
                 @Override
