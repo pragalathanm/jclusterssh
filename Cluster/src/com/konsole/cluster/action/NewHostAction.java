@@ -35,7 +35,7 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#CTL_NewHostAction"
 )
 @ActionReferences({
-    @ActionReference(path = "Menu/Host", position = 75, separatorBefore = 62),
+    @ActionReference(path = "Menu/File", position = 12, separatorAfter = 13),
     @ActionReference(path = "Toolbars/Host", position = 75)
 })
 @Messages("CTL_NewHostAction=New host")

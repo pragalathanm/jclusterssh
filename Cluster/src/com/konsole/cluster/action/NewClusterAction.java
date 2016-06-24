@@ -39,7 +39,7 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#CTL_NewClusterAction"
 )
 @ActionReferences({
-    @ActionReference(path = "Menu/Cluster", position = 0),
+    @ActionReference(path = "Menu/File", position = 10),
     @ActionReference(path = "Toolbars/Cluster", position = 0)
 })
 @Messages("CTL_NewClusterAction=New cluster")

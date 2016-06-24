@@ -82,7 +82,7 @@ import org.openide.windows.TopComponent;
 public class TerminalTopComponent extends TopComponent {
 
     private final TerminalContainer tc;
-    private final String title;
+    private String title;
     private Lookup.Result<Command> lookupResult;
     private final ExecutorService executor = Executors.newSingleThreadExecutor((Runnable r) -> {
         Thread thread = new Thread(r);
@@ -93,6 +93,16 @@ public class TerminalTopComponent extends TopComponent {
     private Future<?> commandLoop;
     private BlockingQueue<Command> queue = new LinkedBlockingQueue<>();
     private boolean snoozed;
+    private boolean local;
+
+    public TerminalTopComponent() {
+        setLayout(new BorderLayout());
+        tc = TerminalContainer.create(TerminalTopComponent.this, "Local");
+        add(tc, BorderLayout.CENTER);
+        snoozed = local = true;
+        title = "Local";
+        executor.submit(connect());
+    }
 
     public TerminalTopComponent(String title) {
         setLayout(new BorderLayout());
@@ -117,12 +127,20 @@ public class TerminalTopComponent extends TopComponent {
 
     @Override
     public void setDisplayName(String name) {
-        super.setName(title);
+        if (local) {
+            super.setDisplayName(name);
+        } else {
+            super.setName(title);
+        }
     }
 
     @Override
     public void setHtmlDisplayName(String htmlDisplayName) {
-        super.setName(title);
+        if (local) {
+            super.setHtmlDisplayName(htmlDisplayName);
+        } else {
+            super.setName(title);
+        }
     }
 
     public boolean isSnoozed() {
@@ -274,6 +292,10 @@ public class TerminalTopComponent extends TopComponent {
                 TerminalExecutionImpl execution = (TerminalExecutionImpl) wrapper.get();
                 execution.getTerminal().setClosable(false);
                 addMouseListener(execution.getTerminal(), execution.getComponent());
+                if (local) {
+                    executor.shutdown();
+                    return;
+                }
                 while (true && !Thread.interrupted()) {
                     try {
                         queue.take().execute(execution);
@@ -355,8 +377,10 @@ public class TerminalTopComponent extends TopComponent {
             addMenuItem(menu, smallerFontAction);
             addMenuItem(menu, new JSeparator());
             addMenuItem(menu, clearAction);
-            addMenuItem(menu, new JSeparator());
-            addMenuItem(menu, snoozeAction);
+            if (!local) {
+                addMenuItem(menu, new JSeparator());
+                addMenuItem(menu, snoozeAction);
+            }
 
             menu.addPopupMenuListener(new PopupMenuListener() {
                 @Override

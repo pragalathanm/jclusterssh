@@ -16,42 +16,27 @@
  */
 package com.konsole.cluster.action;
 
-import com.konsole.cluster.cookie.HostCookie;
+import com.konsole.term.TerminalTopComponent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
-/**
- *
- * @author Pragalathan M <pragalathanm@gmail.com>
- */
 @ActionID(
         category = "File",
-        id = "com.konsole.cluster.action.RemoveHostAction"
+        id = "com.konsole.cluster.action.NewTerminalAction"
 )
 @ActionRegistration(
-        iconBase = "com/konsole/cluster/images/remove_host.png",
-        displayName = "#CTL_RemoveHostAction"
+        displayName = "#CTL_NewTerminalAction"
 )
-@ActionReferences({
-    @ActionReference(path = "Menu/File", position = 32),
-    @ActionReference(path = "Toolbars/Host", position = 75)
-})
-@Messages("CTL_RemoveHostAction=Remove host")
-public final class RemoveHostAction implements ActionListener {
-
-    private final HostCookie context;
-
-    public RemoveHostAction(HostCookie context) {
-        this.context = context;
-    }
+@ActionReference(path = "Menu/File", position = -90)
+@Messages("CTL_NewTerminalAction=New Terminal")
+public final class NewTerminalAction implements ActionListener {
 
     @Override
-    public void actionPerformed(ActionEvent ev) {
-        context.removeHost();
+    public void actionPerformed(ActionEvent e) {
+        new TerminalTopComponent().open();
     }
 }

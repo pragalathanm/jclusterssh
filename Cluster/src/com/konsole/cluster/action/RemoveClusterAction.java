@@ -34,7 +34,7 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#CTL_RemoveClusterAction"
 )
 @ActionReferences({
-    @ActionReference(path = "Menu/Cluster", position = 50),
+    @ActionReference(path = "Menu/File", position = 32, separatorBefore = 31),
     @ActionReference(path = "Toolbars/Cluster", position = 50)
 })
 @Messages("CTL_RemoveClusterAction=Remove cluster")

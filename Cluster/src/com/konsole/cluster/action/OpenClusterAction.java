@@ -34,7 +34,7 @@ import org.openide.util.NbBundle.Messages;
         displayName = "#CTL_OpenClusterAction"
 )
 @ActionReferences({
-    @ActionReference(path = "Menu/Action", position = 200),
+    @ActionReference(path = "Menu/File", position = 20),
     @ActionReference(path = "Toolbars/XAction", position = 200)
 })
 @Messages("CTL_OpenClusterAction=Open Cluster")
