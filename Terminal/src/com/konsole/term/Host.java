@@ -33,8 +33,7 @@ public class Host implements Serializable {
     }
 
     public Host(String name) {
-        this.name = name;
-        this.ipAddress = name.contains("@") ? name.substring(name.indexOf("@") + 1) : name;
+        this.name = this.ipAddress = name.contains("@") ? name.substring(name.indexOf("@") + 1) : name;
         this.user = name.contains("@") ? name.substring(0, name.indexOf("@")).trim() : null;
     }
 
