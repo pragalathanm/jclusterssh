@@ -29,6 +29,7 @@ import org.openide.util.NbBundle.Messages;
         id = "com.konsole.cluster.action.NewTerminalAction"
 )
 @ActionRegistration(
+        iconBase = "com/konsole/cluster/images/new_terminal.png",
         displayName = "#CTL_NewTerminalAction"
 )
 @ActionReference(path = "Menu/File", position = -90)

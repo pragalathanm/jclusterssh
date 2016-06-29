@@ -38,6 +38,10 @@ public interface Command {
         return new TextCommand(text);
     }
 
+    public static TextCommand newPasteCommand(String text) {
+        return new TextCommand(text, false);
+    }
+
     public static TextCommand newSshCommand(Host host) {
         StringBuilder test = new StringBuilder("ssh ");
         if (host.getUser() != null && !host.getUser().isEmpty()) {
@@ -55,13 +59,31 @@ public interface Command {
         return new ClearCommand();
     }
 
+    public static Command newSpecialCommand(int keyCode) {
+        return new SpecialKeyCommand(keyCode);
+    }
+
+    public static Command newInteractiveCommand(KeyEvent evt) {
+        return new InteractiveCommand(evt);
+    }
+
+    public static Command newEscapeCommand() {
+        return new EscapeKeyCommand();
+    }
+
     class TextCommand implements Command {
 
         public final String text;
+        private boolean includeNewLine;
 
         public TextCommand(String text) {
+            this(text, true);
+        }
+
+        public TextCommand(String text, boolean includeNewLine) {
             assert text != null;
             this.text = text;
+            this.includeNewLine = includeNewLine;
         }
 
         @Override
@@ -73,30 +95,19 @@ public interface Command {
         public void execute(TerminalExecution terminal) throws IOException {
             Writer out = terminal.getOutput();
             out.write(text);
-            out.write(KeyEvent.VK_ENTER);
+            if (includeNewLine) {
+                out.write(KeyEvent.VK_ENTER);
+            }
             out.flush();
         }
     }
 
-    abstract class SpecialCommand implements Command {
-
-        private final int keyCode;
-        private final char c;
-        private final int keyChar;
-
-        public SpecialCommand(int keyCode, char c, int keyChar) {
-            this.keyCode = keyCode;
-            this.c = c;
-            this.keyChar = keyChar;
-        }
+    abstract class KeyCommand implements Command {
 
         @Override
         public void execute(TerminalExecution terminal) {
-            JComponent comp = terminal.getComponent();
             Runnable r = () -> {
-                comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, keyCode, c));
-                comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_TYPED, System.currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, KeyEvent.VK_UNDEFINED, (char) keyChar));
-                comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, keyCode, c));
+                execute(terminal.getComponent());
             };
             if (SwingUtilities.isEventDispatchThread()) {
                 r.run();
@@ -104,16 +115,82 @@ public interface Command {
                 SwingUtilities.invokeLater(r);
             }
         }
+
+        protected abstract void execute(JComponent comp);
     }
 
-    class CtrlCCommand extends SpecialCommand {
+    class SpecialKeyCommand extends KeyCommand {
+
+        private final int keyCode;
+
+        private SpecialKeyCommand(int keyCode) {
+            this.keyCode = keyCode;
+        }
+
+        @Override
+        public void execute(JComponent comp) {
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, keyCode, KeyEvent.CHAR_UNDEFINED));
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, keyCode, KeyEvent.CHAR_UNDEFINED));
+        }
+    }
+
+    public class InteractiveCommand extends KeyCommand {
+
+        public KeyEvent evt;
+
+        public InteractiveCommand(KeyEvent evt) {
+            this.evt = evt;
+        }
+
+        @Override
+        protected void execute(JComponent comp) {
+            comp.dispatchEvent(new KeyEvent(comp, evt.getID(), System.currentTimeMillis(), evt.getModifiers(), evt.getKeyCode(), evt.getKeyChar()));
+        }
+
+        @Override
+        public String toString() {
+            return "InteractiveCommand{" + "evt=" + evt + '}';
+        }
+    }
+
+    class EscapeKeyCommand extends KeyCommand {
+
+        @Override
+        public void execute(JComponent comp) {
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_ESCAPE, KeyEvent.CHAR_UNDEFINED));
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_TYPED, System.currentTimeMillis(), 0, 0, (char) 0x001b));
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), 0, KeyEvent.VK_ESCAPE, KeyEvent.CHAR_UNDEFINED));
+        }
+    }
+
+    abstract class ControlKeyCommand extends KeyCommand {
+
+        private final int keyCode;
+        private final char c;
+        private final int keyChar;
+
+        public ControlKeyCommand(int keyCode, char c, int keyChar) {
+            this.keyCode = keyCode;
+            this.c = c;
+            this.keyChar = keyChar;
+        }
+
+        @Override
+        public void execute(JComponent comp) {
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, keyCode, c));
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_TYPED, System.currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, KeyEvent.VK_UNDEFINED, (char) keyChar));
+            comp.dispatchEvent(new KeyEvent(comp, KeyEvent.KEY_RELEASED, System.currentTimeMillis(), KeyEvent.CTRL_DOWN_MASK, keyCode, c));
+        }
+    }
+
+    class CtrlCCommand extends ControlKeyCommand {
 
         public CtrlCCommand() {
             super(KeyEvent.VK_C, 'c', 3);
         }
     }
 
-    class ClearCommand extends SpecialCommand {
+    class ClearCommand extends ControlKeyCommand {
 
         public ClearCommand() {
             super(KeyEvent.VK_L, 'l', 0x000c);

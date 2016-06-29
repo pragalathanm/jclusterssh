@@ -24,7 +24,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -112,9 +111,7 @@ public final class CommandTopComponent extends TopComponent {
         setToolTipText(Bundle.HINT_CommandTopComponent());
         associateLookup(new AbstractLookup(ic));
         commandTextArea.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_ENTER, 0), "ENTER_ACTION");
-        commandTextArea.getInputMap().put(KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, InputEvent.CTRL_DOWN_MASK), "CTRL_L_ACTION");
         commandTextArea.getActionMap().put("ENTER_ACTION", ENTER_KEY_ACTION);
-        commandTextArea.getActionMap().put("CTRL_L_ACTION", CTRL_L_ACTION);
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -367,13 +364,6 @@ public final class CommandTopComponent extends TopComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             executeCommand(commandTextArea.getText());
-        }
-    };
-    private final Action CTRL_L_ACTION = new AbstractAction() {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            executeCommand("clear", false);
         }
     };
 
