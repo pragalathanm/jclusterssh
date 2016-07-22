@@ -183,7 +183,9 @@ public class ClusterPanel extends TopComponent implements ExplorerManager.Provid
         @Override
         public void addHost(String... hostNames) {
             for (String name : hostNames) {
-                selectedCluster.getHosts().add(new Host(name));
+                if (!name.isEmpty()) {
+                    selectedCluster.getHosts().add(new Host(name));
+                }
             }
 
             final Node[] selectedNodes = em.getSelectedNodes();

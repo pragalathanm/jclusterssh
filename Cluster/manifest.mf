@@ -5,5 +5,5 @@ OpenIDE-Module-Install: com/konsole/cluster/Installer.class
 OpenIDE-Module-Layer: com/konsole/cluster/layer.xml
 OpenIDE-Module-Localizing-Bundle: com/konsole/cluster/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.WindowManager
-OpenIDE-Module-Specification-Version: 1.7
+OpenIDE-Module-Specification-Version: 1.8
 
